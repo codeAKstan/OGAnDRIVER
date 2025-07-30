@@ -36,7 +36,7 @@ export default function Header() {
             </Link>
 
             <Link
-              href="#"
+              href="/signup"
               className="bg-gray-800 text-white rounded-full px-4 py-2 flex items-center space-x-2 hover:bg-gray-700 transition-colors"
             >
               <span>Get Started Today</span>

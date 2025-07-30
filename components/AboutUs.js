@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Shield, Users, Award, Target } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
@@ -202,9 +203,11 @@ export default function AboutUs() {
             we're here to serve you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-orange-500 hover:bg-orange-600 text-black px-8 py-6 rounded-lg text-lg">
-              Get Started Today
-            </Button>
+            <Link href="/signup">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black px-8 py-6 rounded-lg text-lg">
+                Get Started Today
+              </Button>
+            </Link>
             <Button
               variant="outline"
               className="border-gray-600 text-white hover:bg-gray-800 px-8 py-6 rounded-lg text-lg bg-transparent"
