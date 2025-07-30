@@ -33,7 +33,7 @@ export default function Header() {
             <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
               About Us
             </Link>
-            <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+            <Link href="/hire-rent" className="text-gray-300 hover:text-white transition-colors">
               Hire & Rent
             </Link>
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">
@@ -80,7 +80,7 @@ export default function Header() {
                 About Us
               </Link>
               <Link 
-                href="#" 
+                href="/hire-rent" 
                 className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
