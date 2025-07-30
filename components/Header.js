@@ -39,7 +39,7 @@ export default function Header() {
             <Link href="/testimonials" className="text-gray-300 hover:text-white transition-colors">
               Testimonials
             </Link>
-            <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+            <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
               Contact Us
             </Link>
 
@@ -94,7 +94,7 @@ export default function Header() {
                 Testimonials
               </Link>
               <Link 
-                href="#" 
+                href="/contact" 
                 className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
