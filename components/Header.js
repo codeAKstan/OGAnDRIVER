@@ -1,9 +1,17 @@
+"use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 
 export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <header className="bg-black border-b border-gray-800">
       <div className="container mx-auto px-4 py-4">
@@ -44,10 +52,65 @@ export default function Header() {
             </Link>
           </nav>
 
-          <button className="md:hidden text-white">
-            <Menu className="w-6 h-6" />
+          <button 
+            className="md:hidden text-white"
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <nav className="md:hidden mt-4 pb-4 border-t border-gray-800">
+            <div className="flex flex-col space-y-4 pt-4">
+              <Link 
+                href="/" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link 
+                href="/about" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About Us
+              </Link>
+              <Link 
+                href="#" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Hire & Rent
+              </Link>
+              <Link 
+                href="#" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Testimonials
+              </Link>
+              <Link 
+                href="#" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact Us
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-gray-800 text-white rounded-full px-4 py-2 flex items-center justify-center space-x-2 hover:bg-gray-700 transition-colors w-fit"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span>Get Started Today</span>
+                <Plus className="w-4 h-4" />
+              </Link>
+            </div>
+          </nav>
+        )}
       </div>
     </header>
   )
