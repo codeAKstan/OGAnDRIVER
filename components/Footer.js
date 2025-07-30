@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 
 export default function Footer() {
   return (
@@ -7,21 +8,26 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-6">
-              <div className="w-8 h-8 bg-orange-500 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-sm">OG</span>
+              <div className="flex items-center space-x-2">
+                <Image 
+                  src="/logo.png" 
+                  alt="OGA Driver Logo" 
+                  width={154} 
+                  height={154} 
+                  className="object-contain"
+                />
               </div>
-              <span className="text-white font-bold text-xl">OGANDRIVER</span>
             </div>
             <p className="text-gray-400 mb-4">
               Nigeria's leading platform for tricycle hire and purchase services. Connecting drivers, owners, and
               customers seamlessly.
             </p>
             <p className="text-gray-500 text-sm">
-              Lagos, Nigeria
+              Enugu, Nigeria
               <br />
-              +234 (0) 123 456 7890
+              +234 (0) 91 3743 2913
               <br />
-              info@ogandriver.com
+              info@ogandriver.ng
             </p>
           </div>
 
