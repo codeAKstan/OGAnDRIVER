@@ -5,7 +5,7 @@ export default function HirePurchase() {
   const vehicles = [
     {
       image: "/keke1.png?height=200&width=300",
-      title: "Brand New Tricycle Keke for 2024",
+      title: "Brand New Tricycle Keke RE 2024",
       location: "Abuja, Nigeria",
       price: "₦3,500,000.00",
       features: ["New Engine", "Good Condition", "Warranty Included"],
@@ -19,28 +19,28 @@ export default function HirePurchase() {
     },
     {
       image: "/keke3.png?height=200&width=300",
-      title: "Brand New Tricycle Keke for 2024",
+      title: "Brand New Tricycle Keke RE 2024",
       location: "Port Harcourt, Nigeria",
       price: "₦1,400,000.00",
       features: ["New Engine", "Excellent Condition", "Full Documentation"],
     },
     {
       image: "/keke4.png?height=200&width=300",
-      title: "Brand New Tricycle Keke for 2024",
+      title: "Brand New Tricycle Keke RE 2024",
       location: "Port Harcourt, Nigeria",
       price: "₦1,400,000.00",
       features: ["New Engine", "Excellent Condition", "Full Documentation"],
     },
     {
       image: "/keke5.png?height=200&width=300",
-      title: "Brand New Tricycle Keke for 2024",
+      title: "Brand New Tricycle Keke RE 2024",
       location: "Port Harcourt, Nigeria",
       price: "₦1,400,000.00",
       features: ["New Engine", "Excellent Condition", "Full Documentation"],
     },
     {
       image: "/keke6.png?height=200&width=300",
-      title: "Brand New Tricycle Keke for 2024",
+      title: "Brand New Tricycle Keke RE 2024",
       location: "Port Harcourt, Nigeria",
       price: "₦1,400,000.00",
       features: ["New Engine", "Excellent Condition", "Full Documentation"],

@@ -6,23 +6,19 @@ export default function Newsletter() {
   return (
     <section className="bg-black py-20">
       <div className="container mx-auto px-4">
-        <div className="relative bg-orange-500 rounded-2xl overflow-hidden shadow-lg">
-          <div className="flex flex-col md:flex-row gap-8 p-8 md:p-12">
-            {/* Left column: Image */}
-            <div className="md:w-1/2 relative">
-              <Image
-                src="/complete.png?height=300&width=400"
-                alt="Newsletter signup"
-                width={400}
-                height={300}
-                className="w-full h-full object-cover rounded-lg"
-              />
+        <div className="relative bg-orange-500 rounded-3xl overflow-hidden shadow-lg" style={{backgroundImage: 'url(/complete.png)', backgroundSize: 'contain', backgroundPosition: 'left center', backgroundRepeat: 'no-repeat'}}>
+          <div className="absolute inset-0 rounded-2xl"></div>
+          <div className="flex flex-col md:flex-row">
+            
+            {/* Left column: Background image space */}
+            <div className="md:w-1/2 min-h-[300px] md:min-h-[400px]">
+              {/* This space is for the background image */}
             </div>
 
             {/* Right column: Text and form */}
-            <div className="md:w-1/2 bg-orange-500 p-8 md:p-12 flex flex-col justify-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Get Updates</h2>
-              <p className="text-white/90 mb-6">
+            <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">Get Updates</h2>
+              <p className="text-black/90 mb-6">
                 Get updates on new Keke listings, platform upgrades and tips to grow your hustle straight to your inbox. No spamming, just value.
               </p>
 
