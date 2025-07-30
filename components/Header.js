@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Menu } from "lucide-react";
-import { Plus } from "lucide-react"; // Import the Plus icon
+import { Plus } from "lucide-react";
 
 export default function Header() {
   return (
@@ -19,10 +19,10 @@ export default function Header() {
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+            <Link href="/" className="text-gray-300 hover:text-white transition-colors">
               Home
             </Link>
-            <Link href="#" className="text-gray-300 hover:text-white transition-colors">
+            <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
               About Us
             </Link>
             <Link href="#" className="text-gray-300 hover:text-white transition-colors">
@@ -35,13 +35,12 @@ export default function Header() {
               Contact Us
             </Link>
 
-            {/* Updated Get Started Today Button */}
             <Link
               href="#"
               className="bg-gray-800 text-white rounded-full px-4 py-2 flex items-center space-x-2 hover:bg-gray-700 transition-colors"
             >
               <span>Get Started Today</span>
-              <Plus className="w-4 h-4" /> {/* Plus icon */}
+              <Plus className="w-4 h-4" />
             </Link>
           </nav>
 
@@ -51,5 +50,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  );
+  )
 }
