@@ -333,9 +333,12 @@ export default function HireRentPage() {
             We're here to help you find the perfect vehicle solution.
           </p>
           <div className="space-x-4">
+          <Link href="/contact">
+            
             <Button className="bg-orange-500 hover:bg-orange-600 text-black px-8 py-3">
               Contact Us
             </Button>
+          </Link>
             <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3">
               Request Quote
             </Button>
