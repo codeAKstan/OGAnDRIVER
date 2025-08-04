@@ -1,13 +1,14 @@
 from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from django.contrib.auth import get_user_model
-from .serializers import UserRegistrationSerializer, UserSerializer
+from .serializers import UserRegistrationSerializer, UserSerializer, AdminUserCreationSerializer
 
 User = get_user_model()
 
 class SignUpView(generics.CreateAPIView):
+    """Public registration endpoint - only allows OGA and DRIVER roles"""
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
@@ -19,6 +20,23 @@ class SignUpView(generics.CreateAPIView):
             user_data = UserSerializer(user).data
             return Response({
                 'message': 'User created successfully',
+                'user': user_data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AdminUserCreationView(generics.CreateAPIView):
+    """Admin-only endpoint for creating admin users"""
+    queryset = User.objects.all()
+    serializer_class = AdminUserCreationSerializer
+    permission_classes = [IsAdminUser]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user_data = UserSerializer(user).data
+            return Response({
+                'message': 'Admin user created successfully',
                 'user': user_data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
