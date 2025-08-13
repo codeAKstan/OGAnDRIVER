@@ -55,7 +55,7 @@ function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
   }, [isVisible, end, duration])
 
   return (
-    <div ref={counterRef} className="text-4xl font-bold text-orange-500 mb-2">
+    <div ref={counterRef} className="text-4xl font-bold text-white mb-2">
       {count.toLocaleString()}{suffix}
     </div>
   )
@@ -63,157 +63,206 @@ function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
 
 export default function AboutUs() {
   return (
-    <section className="bg-black">
-      {/* Hero Image Section */}
-      <div className="relative">
-        <Image
-          src="/kekepark.jpg"
-          alt="Keke Park Scene"
-          layout="responsive"
-          width={1920}
-          height={800}
-          className="w-full h-auto object-cover"
-        />
-        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-center">
-          <h1 className="text-4xl md:text-6xl font-bold">
-            About <span className="text-orange-500">Oga Driver</span>
-          </h1>
-        </div>
-      </div>
-
+    <section className="bg-black text-white">
+      {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
-        {/* Mission & Vision */}
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
-          <div className="bg-gray-900 p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-4 text-orange-500">Our Mission</h2>
-            <p className="text-gray-300 leading-relaxed">
-              To provide a transparent, reliable, and stress-free platform that empowers tricycle drivers 
-              and owners while delivering exceptional transportation services to customers across Nigeria.
-            </p>
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            Empowering <span className="text-orange-500">Nigeria's</span>
+          </h1>
+          <h2 className="text-4xl md:text-5xl font-bold mb-8">
+            Keke Owners and Drivers
+          </h2>
+          <p className="text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed">
+            Our platform brings keke gap between vehicle owners and drivers, making every hire purchase deal secure, and transparent.
+          </p>
+        </div>
+
+        {/* Hero Image and Mission/Vision */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+          <div className="relative">
+            <Image
+              src="/kekepark.png"
+              alt="Keke lineup"
+              width={400}
+              height={200}
+              className="w-full rounded-lg"
+            />
           </div>
-          <div className="bg-gray-900 p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-4 text-orange-500">Our Vision</h2>
-            <p className="text-gray-300 leading-relaxed">
-              To become Africa's most trusted and innovative tricycle marketplace, 
-              transforming urban mobility and creating sustainable economic opportunities for all stakeholders.
-            </p>
+          
+          <div className="space-y-8">
+            {/* Mission */}
+            <div className="bg-gray-900 p-6 rounded-lg">
+              <div className="flex items-center mb-4">
+                <div className="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                <h3 className="text-xl font-bold text-orange-500">Our Mission</h3>
+              </div>
+              <p className="text-gray-300 leading-relaxed">
+                To provide reliable, safe, and cost-effective transportation solutions that connect communities across Nigeria.
+              </p>
+            </div>
+
+            {/* Vision */}
+            <div className="bg-gray-900 p-6 rounded-lg">
+              <div className="flex items-center mb-4">
+                <div className="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                <h3 className="text-xl font-bold text-orange-500">Our Vision</h3>
+              </div>
+              <p className="text-gray-300 leading-relaxed">
+                To become Africa's most trusted and innovative transportation platform, transforming urban mobility across Nigeria.
+              </p>
+            </div>
+
+            <Link href="/hire-rent">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black px-8 py-3 rounded-lg font-semibold">
+                Learn More
+              </Button>
+            </Link>
           </div>
         </div>
 
-        {/* Core Values */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Our Core Values</h2>
+        {/* Know More About Our Core Values */}
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">
+              Know More About
+            </h2>
+            <h3 className="text-3xl font-bold">
+              Our Core <span className="text-orange-500">Values</span>
+            </h3>
+          </div>
+          
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-black" />
+            <div className="text-center group">
+              <div className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors">
+                <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-black" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Trust & Safety</h4>
+                <p className="text-gray-400 text-sm">
+                  We prioritize the safety and security of all our users through verified profiles.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Trust & Safety</h3>
-              <p className="text-gray-400">
-                We prioritize the safety and security of all our users through verified profiles and secure transactions.
-              </p>
             </div>
-            <div className="text-center">
-              <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-black" />
+            
+            <div className="text-center group">
+              <div className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors">
+                <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-black" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Community</h4>
+                <p className="text-gray-400 text-sm">
+                  Building strong relationships within the tricycle community and fostering growth.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Community</h3>
-              <p className="text-gray-400">
-                Building strong relationships within the tricycle community and fostering mutual growth.
-              </p>
             </div>
-            <div className="text-center">
-              <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="w-8 h-8 text-black" />
+            
+            <div className="text-center group">
+              <div className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors">
+                <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="w-8 h-8 text-black" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Excellence</h4>
+                <p className="text-gray-400 text-sm">
+                  Delivering exceptional service quality and continuously improving our platform.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Excellence</h3>
-              <p className="text-gray-400">
-                Delivering exceptional service quality and continuously improving our platform.
-              </p>
             </div>
-            <div className="text-center">
-              <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Target className="w-8 h-8 text-black" />
+            
+            <div className="text-center group">
+              <div className="bg-gray-900 p-6 rounded-lg hover:bg-gray-800 transition-colors">
+                <div className="bg-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-black" />
+                </div>
+                <h4 className="text-lg font-semibold mb-2">Innovation</h4>
+                <p className="text-gray-400 text-sm">
+                  Embracing technology to create innovative solutions for transportation challenges.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Innovation</h3>
-              <p className="text-gray-400">
-                Embracing technology to create innovative solutions for modern transportation challenges.
-              </p>
             </div>
           </div>
         </div>
 
         {/* Our Story */}
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-          <div>
-            <h2 className="text-3xl font-bold mb-6">Our Story</h2>
-            <p className="text-gray-300 mb-4 leading-relaxed">
-              Founded with a vision to transform Nigeria's transportation landscape, Oga Driver emerged 
-              from the need to create a reliable, transparent platform for tricycle services.
-            </p>
-            <p className="text-gray-300 mb-4 leading-relaxed">
-              We recognized the challenges faced by drivers in finding quality vehicles and owners 
-              in connecting with reliable drivers. Our platform bridges this gap, creating opportunities 
-              for sustainable income and growth.
-            </p>
-            <p className="text-gray-300 leading-relaxed">
-              Today, we're proud to serve communities across Nigeria, empowering thousands of drivers 
-              and connecting them with customers who need reliable transportation services.
-            </p>
-          </div>
-          <div className="relative">
-            <Image
-              src="/tricycle-lineup.png"
-              alt="Tricycle lineup"
-              width={500}
-              height={400}
-              className="w-full rounded-lg"
-            />
+        <div className="mb-20">
+          <h2 className="text-3xl font-bold mb-8">
+            Our <span className="text-orange-500">Story</span>
+          </h2>
+          
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            <div className="space-y-6">
+              <p className="text-gray-300 leading-relaxed">
+                Founded with a vision to transform Nigeria's transportation landscape, OGA DRIVER emerged 
+                from the need to create a reliable, transparent platform for tricycle services.
+              </p>
+              
+              <p className="text-gray-300 leading-relaxed">
+                We recognized the challenges faced by drivers in finding quality vehicles and owners 
+                in connecting with reliable drivers. Our platform bridges this gap, creating opportunities 
+                for sustainable income and growth.
+              </p>
+              
+              <p className="text-gray-300 leading-relaxed">
+                Today, we're proud to serve communities across Nigeria, empowering thousands of drivers 
+                and connecting them with customers who need reliable transportation services.
+              </p>
+            </div>
+            
+            <div className="relative">
+              <Image
+                src="/tricycle-lineup.png"
+                alt="Keke park scene"
+                width={500}
+                height={400}
+                className="w-full rounded-lg"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Animated Statistics */}
-        <div className="bg-gray-900 rounded-lg p-8 mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Our Impact</h2>
+        {/* Statistics */}
+        <div className="bg-gray-900 rounded-lg p-8 mb-20">
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div className="transform hover:scale-105 transition-transform duration-300">
-              <AnimatedCounter end="5000" suffix="+" />
+              <AnimatedCounter end="1500" suffix="+" />
               <p className="text-gray-300">Active Drivers</p>
             </div>
             <div className="transform hover:scale-105 transition-transform duration-300">
               <AnimatedCounter end="2500" suffix="+" />
-              <p className="text-gray-300">Tricycles Available</p>
+              <p className="text-gray-300">Keke Available</p>
             </div>
             <div className="transform hover:scale-105 transition-transform duration-300">
               <AnimatedCounter end="15" suffix="+" />
               <p className="text-gray-300">Cities Covered</p>
             </div>
             <div className="transform hover:scale-105 transition-transform duration-300">
-              <AnimatedCounter end="50000" suffix="+" />
+              <AnimatedCounter end="3000" suffix="+" />
               <p className="text-gray-300">Happy Customers</p>
             </div>
           </div>
         </div>
 
         {/* Call to Action */}
-        <div className="text-center">
-          <h2 className="text-3xl font-bold mb-6">Join the Oga Driver Community</h2>
-          <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
-            Whether you're a driver looking for opportunities or a customer needing reliable transportation, 
-            we're here to serve you.
+        <div className="bg-orange-500 rounded-lg p-8 text-center text-black">
+          <h2 className="text-3xl font-bold mb-4">Join the OGAnDRIVER Community</h2>
+          <p className="text-lg mb-6 opacity-90">
+            Whether you're a driver looking for opportunities or a customer needing 
+            reliable transportation, we're here to serve you.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-black px-8 py-6 rounded-lg text-lg">
+              <Button className="bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-lg font-semibold">
                 Get Started Today
               </Button>
             </Link>
-            <Button
-              variant="outline"
-              className="border-gray-600 text-white hover:bg-gray-800 px-8 py-6 rounded-lg text-lg bg-transparent"
-            >
-              Contact Us
-            </Button>
+            <Link href="/contact">
+              <Button 
+                variant="outline" 
+                className="border-black text-black hover:bg-black hover:text-white px-8 py-3 rounded-lg font-semibold bg-transparent"
+              >
+                Contact Us
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
