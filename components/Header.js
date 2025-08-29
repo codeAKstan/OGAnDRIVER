@@ -34,7 +34,7 @@ export default function Header() {
               About Us
             </Link>
             <Link href="/hire-rent" className="text-gray-300 hover:text-white transition-colors">
-              Hire & Rent
+              Available Kekes
             </Link>
             <Link href="/testimonials" className="text-gray-300 hover:text-white transition-colors">
               Testimonials
@@ -84,7 +84,7 @@ export default function Header() {
                 className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Hire & Rent
+                Available Kekes
               </Link>
               <Link 
                 href="/testimonials" 
