@@ -6,17 +6,17 @@ export default function Newsletter() {
   return (
     <section className="bg-black py-20">
       <div className="container mx-auto px-4">
-        <div className="relative bg-orange-500 rounded-3xl overflow-hidden shadow-lg" style={{backgroundImage: 'url(/complete.png)', backgroundSize: 'contain', backgroundPosition: 'left center', backgroundRepeat: 'no-repeat'}}>
+        <div className="relative bg-orange-500 rounded-3xl overflow-hidden shadow-lg md:bg-[url('/complete.png')] md:bg-contain md:bg-left md:bg-no-repeat">
           <div className="absolute inset-0 rounded-2xl"></div>
           <div className="flex flex-col md:flex-row">
             
-            {/* Left column: Background image space */}
-            <div className="md:w-1/2 min-h-[300px] md:min-h-[400px]">
+            {/* Left column: Background image space - hidden on mobile */}
+            <div className="hidden md:block md:w-1/2 min-h-[400px]">
               {/* This space is for the background image */}
             </div>
 
             {/* Right column: Text and form */}
-            <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+            <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
               <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">Get Updates</h2>
               <p className="text-black/90 mb-6">
                 Get updates on new Keke listings, platform upgrades and tips to grow your hustle straight to your inbox. No spamming, just value.
