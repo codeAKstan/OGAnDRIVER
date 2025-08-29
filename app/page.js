@@ -13,15 +13,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
-      <Hero />
+      <div className="pt-20">
+        <Hero />
       <Features />
       <ProductShowcase />
       <HirePurchase />
       <HowItWorks />
       <Testimonials />
       <FAQ />
-      <Newsletter />
-      <Footer />
+        <Newsletter />
+        <Footer />
+      </div>
     </div>
   )
 }

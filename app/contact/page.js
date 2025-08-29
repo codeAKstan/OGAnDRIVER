@@ -140,9 +140,9 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
-      
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-black to-gray-900 py-20">
+      <div className="pt-20">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-r from-black to-gray-900 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Get in <span className="text-orange-500">Touch</span>
@@ -398,6 +398,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+      </div>
 
       <Footer />
     </div>

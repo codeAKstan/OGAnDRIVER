@@ -6,8 +6,10 @@ export default function About() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
-      <AboutUs />
-      <Footer />
+      <div className="pt-20">
+        <AboutUs />
+        <Footer />
+      </div>
     </div>
   )
 }

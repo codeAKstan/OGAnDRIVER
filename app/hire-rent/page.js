@@ -135,9 +135,9 @@ export default function HireRentPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
-      
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-black to-gray-900 py-20">
+      <div className="pt-20">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-r from-black to-gray-900 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             <span className="text-orange-500">Hire</span> or <span className="text-orange-500">Buy</span>
@@ -345,6 +345,7 @@ export default function HireRentPage() {
           </div>
         </div>
       </section>
+      </div>
 
       <Footer />
     </div>
