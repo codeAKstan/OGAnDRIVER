@@ -5,12 +5,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import Image from "next/image"
-import { Eye, EyeOff, User, Mail, Phone, Lock, Download } from "lucide-react"
+import { Eye, EyeOff, User, Mail, Phone, Lock, Download, CheckCircle, AlertCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import apiService from "@/lib/api"
 
 export default function SignupPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [userType, setUserType] = useState("driver") // driver, oga
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState({ type: "", text: "" })
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -27,10 +32,82 @@ export default function SignupPage() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const generateUsername = (email) => {
+    return email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '')
+  }
+
+  const validateForm = () => {
+    const errors = []
+    
+    if (!formData.firstName.trim()) errors.push("First name is required")
+    if (!formData.lastName.trim()) errors.push("Last name is required")
+    if (!formData.email.trim()) errors.push("Email is required")
+    if (!formData.phone.trim()) errors.push("Phone number is required")
+    if (formData.password.length < 8) errors.push("Password must be at least 8 characters")
+    if (formData.password !== formData.confirmPassword) errors.push("Passwords do not match")
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (formData.email && !emailRegex.test(formData.email)) {
+      errors.push("Please enter a valid email address")
+    }
+    
+    return errors
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log("Form submitted:", { ...formData, userType })
+    setMessage({ type: "", text: "" })
+    
+    // Validate form
+    const errors = validateForm()
+    if (errors.length > 0) {
+      setMessage({ type: "error", text: errors[0] })
+      return
+    }
+    
+    setIsLoading(true)
+    
+    try {
+      // Prepare data for backend
+      const registrationData = {
+        username: generateUsername(formData.email),
+        email: formData.email,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: formData.phone,
+        role: userType === "oga" ? "OGA" : "DRIVER",
+        password: formData.password,
+        password_confirm: formData.confirmPassword
+      }
+      
+      const response = await apiService.registerUser(registrationData)
+      
+      setMessage({ 
+        type: "success", 
+        text: "Account created successfully! Redirecting to login..." 
+      })
+      
+      // Redirect to login page after 2 seconds
+      setTimeout(() => {
+        router.push('/login')
+      }, 2000)
+      
+    } catch (error) {
+      console.error('Registration error:', error)
+      let errorMessage = "Registration failed. Please try again."
+      
+      if (error.message.includes('email')) {
+        errorMessage = "An account with this email already exists."
+      } else if (error.message.includes('username')) {
+        errorMessage = "Username is already taken. Please try a different email."
+      } else if (error.message.includes('password')) {
+        errorMessage = "Password does not meet requirements."
+      }
+      
+      setMessage({ type: "error", text: errorMessage })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -116,6 +193,22 @@ export default function SignupPage() {
                   <span>Download App</span>
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* Message Display */}
+          {message.text && (
+            <div className={`p-4 rounded-lg border flex items-center space-x-2 mb-6 ${
+              message.type === "success" 
+                ? "bg-green-900/20 border-green-500 text-green-400" 
+                : "bg-red-900/20 border-red-500 text-red-400"
+            }`}>
+              {message.type === "success" ? (
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              )}
+              <span>{message.text}</span>
             </div>
           )}
 
@@ -252,9 +345,10 @@ export default function SignupPage() {
 
             <Button
               type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600 text-black py-6 text-lg font-semibold"
+              disabled={isLoading}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed text-black py-6 text-lg font-semibold"
             >
-              Create Account
+              {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 

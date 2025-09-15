@@ -115,3 +115,17 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'phone_number', 'role', 'date_joined')
         read_only_fields = ('id', 'date_joined')
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+    
+    def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError("Email is required.")
+        return value.lower()
+    
+    def validate_password(self, value):
+        if not value:
+            raise serializers.ValidationError("Password is required.")
+        return value

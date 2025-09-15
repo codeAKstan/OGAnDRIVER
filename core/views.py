@@ -2,8 +2,9 @@ from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser
-from django.contrib.auth import get_user_model
-from .serializers import UserRegistrationSerializer, UserSerializer, AdminUserCreationSerializer
+from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib.auth.models import AnonymousUser
+from .serializers import UserRegistrationSerializer, UserSerializer, AdminUserCreationSerializer, LoginSerializer
 
 User = get_user_model()
 
@@ -40,6 +41,48 @@ class AdminUserCreationView(generics.CreateAPIView):
                 'user': user_data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    """Login endpoint that returns user data and role for frontend routing"""
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
+        
+        # Find user by email (since we use email for login)
+        try:
+            user = User.objects.get(email=email)
+            # Authenticate using username and password
+            authenticated_user = authenticate(request, username=user.username, password=password)
+            
+            if authenticated_user:
+                login(request, authenticated_user)
+                user_data = UserSerializer(authenticated_user).data
+                return Response({
+                    'message': 'Login successful',
+                    'user': user_data,
+                    'role': authenticated_user.role
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'error': 'Invalid credentials'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+                
+        except User.DoesNotExist:
+            return Response({
+                'error': 'Invalid credentials'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def logout_view(request):
+    """Logout endpoint"""
+    from django.contrib.auth import logout
+    logout(request)
+    return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

@@ -5,10 +5,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import Image from "next/image"
-import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, CheckCircle, AlertCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import apiService from "@/lib/api"
 
 export default function LoginPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState({ type: "", text: "" })
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -21,10 +26,67 @@ export default function LoginPage() {
     })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log("Login form submitted:", formData)
+    setMessage({ type: "", text: "" })
+    
+    // Basic validation
+    if (!formData.email || !formData.password) {
+      setMessage({ type: "error", text: "Please fill in all fields" })
+      return
+    }
+    
+    setIsLoading(true)
+    
+    try {
+      const response = await apiService.loginUser({
+        email: formData.email,
+        password: formData.password
+      })
+      
+      setMessage({ 
+        type: "success", 
+        text: "Login successful! Redirecting..." 
+      })
+      
+      // Store user data in localStorage for session management
+      localStorage.setItem('user', JSON.stringify(response.user))
+      localStorage.setItem('userRole', response.role)
+      
+      // Role-based redirect
+      setTimeout(() => {
+        if (response.role === 'OGA') {
+          router.push('/dashboard')
+        } else if (response.role === 'DRIVER') {
+          router.push('/kyc')
+        } else {
+          router.push('/dashboard') // fallback
+        }
+      }, 1500)
+      
+    } catch (error) {
+      console.error('Login error:', error)
+      let errorMessage = "Something went wrong. Please try again."
+      
+      // Handle specific error messages from the backend
+      if (error.message === 'Invalid credentials') {
+        errorMessage = "The email or password you entered is incorrect. Please double-check your credentials and try again. If you don't have an account, please sign up first."
+      } else if (error.message.includes('email')) {
+        errorMessage = "Please enter a valid email address."
+      } else if (error.message.includes('password')) {
+        errorMessage = "Password is required."
+      } else if (error.message.includes('400')) {
+        errorMessage = "Please check your input and try again."
+      } else if (error.message.includes('500')) {
+        errorMessage = "Server error. Please try again later."
+      } else if (error.message.includes('Network') || error.message.includes('fetch')) {
+        errorMessage = "Network error. Please check your internet connection and try again."
+      }
+      
+      setMessage({ type: "error", text: errorMessage })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -60,6 +122,22 @@ export default function LoginPage() {
               Sign in to your account to continue
             </p>
           </div>
+
+          {/* Message Display */}
+          {message.text && (
+            <div className={`p-4 rounded-lg border flex items-center space-x-2 mb-6 ${
+              message.type === "success" 
+                ? "bg-green-900/20 border-green-500 text-green-400" 
+                : "bg-red-900/20 border-red-500 text-red-400"
+            }`}>
+              {message.type === "success" ? (
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              )}
+              <span>{message.text}</span>
+            </div>
+          )}
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -130,9 +208,10 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600 text-black py-6 text-lg font-semibold"
+              disabled={isLoading}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed text-black py-6 text-lg font-semibold"
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 
