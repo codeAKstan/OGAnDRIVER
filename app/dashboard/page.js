@@ -168,11 +168,11 @@ export default function DashboardPage() {
                 <Plus className="w-4 h-4 mr-2" />
                 Add New Vehicle
               </Button>
-              <Button variant="outline" className="w-full border-gray-600 text-white hover:bg-gray-800">
+              <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
                 <Search className="w-4 h-4 mr-2" />
                 Find Drivers
               </Button>
-              <Button variant="outline" className="w-full border-gray-600 text-white hover:bg-gray-800">
+              <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
                 <DollarSign className="w-4 h-4 mr-2" />
                 View Financial Reports
               </Button>
