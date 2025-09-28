@@ -2,6 +2,11 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import Link from "next/link"
 import Image from "next/image"
 import { 
@@ -22,6 +27,17 @@ export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false)
+  const [vehicleForm, setVehicleForm] = useState({
+    vehicle_type: '',
+    model_name: '',
+    registration_number: '',
+    photo_url: '',
+    total_cost: '',
+    amount_paid: ''
+  })
+  const [formErrors, setFormErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     // Check if user is logged in and has the right role
@@ -49,6 +65,90 @@ export default function DashboardPage() {
       localStorage.removeItem('user')
       localStorage.removeItem('userRole')
       router.push('/login')
+    }
+  }
+
+  const handleVehicleFormChange = (field, value) => {
+    setVehicleForm(prev => ({
+      ...prev,
+      [field]: value
+    }))
+    // Clear error when user starts typing
+    if (formErrors[field]) {
+      setFormErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }))
+    }
+  }
+
+  const validateForm = () => {
+    const errors = {}
+    
+    if (!vehicleForm.vehicle_type) {
+      errors.vehicle_type = 'Vehicle type is required'
+    }
+    
+    if (!vehicleForm.model_name.trim()) {
+      errors.model_name = 'Model name is required'
+    }
+    
+    if (!vehicleForm.registration_number.trim()) {
+      errors.registration_number = 'Registration number is required'
+    }
+    
+    if (!vehicleForm.total_cost || parseFloat(vehicleForm.total_cost) <= 0) {
+      errors.total_cost = 'Valid total cost is required'
+    }
+    
+    if (vehicleForm.amount_paid && parseFloat(vehicleForm.amount_paid) < 0) {
+      errors.amount_paid = 'Amount paid cannot be negative'
+    }
+    
+    if (vehicleForm.amount_paid && parseFloat(vehicleForm.amount_paid) > parseFloat(vehicleForm.total_cost)) {
+      errors.amount_paid = 'Amount paid cannot exceed total cost'
+    }
+    
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  const handleAddVehicle = async () => {
+    if (!validateForm()) {
+      return
+    }
+    
+    setIsSubmitting(true)
+    
+    try {
+      const vehicleData = {
+        ...vehicleForm,
+        total_cost: parseFloat(vehicleForm.total_cost),
+        amount_paid: vehicleForm.amount_paid ? parseFloat(vehicleForm.amount_paid) : 0,
+        owner: user.id
+      }
+      
+      await apiService.addVehicle(vehicleData)
+      
+      // Reset form and close modal
+      setVehicleForm({
+        vehicle_type: '',
+        model_name: '',
+        registration_number: '',
+        photo_url: '',
+        total_cost: '',
+        amount_paid: ''
+      })
+      setIsAddVehicleOpen(false)
+      
+      // Show success message (you might want to add a toast notification here)
+      alert('Vehicle added successfully!')
+      
+    } catch (error) {
+      console.error('Error adding vehicle:', error)
+      alert('Failed to add vehicle. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -164,10 +264,132 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-black">
-                <Plus className="w-4 h-4 mr-2" />
-                Add New Vehicle
-              </Button>
+              <Dialog open={isAddVehicleOpen} onOpenChange={setIsAddVehicleOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-black">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add New Vehicle
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Add New Vehicle</DialogTitle>
+                    <DialogDescription className="text-gray-400">
+                      Enter the details of your vehicle to add it to your fleet.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="vehicle_type" className="text-white">Vehicle Type</Label>
+                      <Select 
+                        value={vehicleForm.vehicle_type} 
+                        onValueChange={(value) => handleVehicleFormChange('vehicle_type', value)}
+                      >
+                        <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                          <SelectValue placeholder="Select vehicle type" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          <SelectItem value="tricycle">Tricycle (Keke)</SelectItem>
+                          <SelectItem value="bus">Bus</SelectItem>
+                          <SelectItem value="bike">Motorcycle</SelectItem>
+                          <SelectItem value="car">Car</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formErrors.vehicle_type && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.vehicle_type}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="model_name" className="text-white">Model Name</Label>
+                      <Input
+                        id="model_name"
+                        value={vehicleForm.model_name}
+                        onChange={(e) => handleVehicleFormChange('model_name', e.target.value)}
+                        placeholder="e.g., Toyota Hiace, Bajaj RE"
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      {formErrors.model_name && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.model_name}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="registration_number" className="text-white">Registration Number</Label>
+                      <Input
+                        id="registration_number"
+                        value={vehicleForm.registration_number}
+                        onChange={(e) => handleVehicleFormChange('registration_number', e.target.value)}
+                        placeholder="e.g., ABC-123-XY"
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      {formErrors.registration_number && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.registration_number}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="total_cost" className="text-white">Total Cost (₦)</Label>
+                      <Input
+                        id="total_cost"
+                        type="number"
+                        value={vehicleForm.total_cost}
+                        onChange={(e) => handleVehicleFormChange('total_cost', e.target.value)}
+                        placeholder="e.g., 2500000"
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      {formErrors.total_cost && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.total_cost}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="amount_paid" className="text-white">Amount Paid (₦) - Optional</Label>
+                      <Input
+                        id="amount_paid"
+                        type="number"
+                        value={vehicleForm.amount_paid}
+                        onChange={(e) => handleVehicleFormChange('amount_paid', e.target.value)}
+                        placeholder="e.g., 1000000"
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      />
+                      {formErrors.amount_paid && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.amount_paid}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="photo_url" className="text-white">Photo URL - Optional</Label>
+                      <Input
+                        id="photo_url"
+                        value={vehicleForm.photo_url}
+                        onChange={(e) => handleVehicleFormChange('photo_url', e.target.value)}
+                        placeholder="https://example.com/vehicle-photo.jpg"
+                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      />
+                    </div>
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsAddVehicleOpen(false)}
+                      className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleAddVehicle}
+                      disabled={isSubmitting}
+                      className="bg-orange-500 hover:bg-orange-600 text-black"
+                    >
+                      {isSubmitting ? 'Adding...' : 'Add Vehicle'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
               <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
                 <Search className="w-4 h-4 mr-2" />
                 Find Drivers
