@@ -1,0 +1,200 @@
+<svg width="1400" height="1800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1400" height="1800" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Title -->
+  <text x="700" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#000000">Owner's Dashboard Output Design - Wireframe</text>
+  
+  <!-- Header Section -->
+  <rect x="50" y="70" width="1300" height="100" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="100" y="100" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">HEADER</text>
+  
+  <!-- Logo Area -->
+  <rect x="100" y="110" width="80" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="140" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">LOGO</text>
+  
+  <!-- Dashboard Title -->
+  <text x="200" y="125" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000000">Oga Dashboard</text>
+  <text x="200" y="145" font-family="Arial, sans-serif" font-size="12" fill="#000000">Welcome back, Owner Name!</text>
+  
+  <!-- Header Actions -->
+  <rect x="1150" y="110" width="40" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="1170" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">BELL</text>
+  
+  <rect x="1200" y="110" width="40" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="1220" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">SET</text>
+  
+  <rect x="1250" y="110" width="50" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="1275" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">LOGOUT</text>
+  
+  <!-- Stats Cards Section -->
+  <text x="100" y="210" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#000000">Statistics Overview</text>
+  
+  <!-- Stats Card 1: Total Vehicles -->
+  <rect x="100" y="230" width="300" height="120" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="120" y="255" font-family="Arial, sans-serif" font-size="12" fill="#000000">Total Vehicles</text>
+  <rect x="350" y="240" width="30" height="20" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="365" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">CAR</text>
+  <text x="120" y="290" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#000000">0</text>
+  <text x="120" y="315" font-family="Arial, sans-serif" font-size="10" fill="#000000">No vehicles yet</text>
+  
+  <!-- Stats Card 2: Active Drivers -->
+  <rect x="420" y="230" width="300" height="120" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="440" y="255" font-family="Arial, sans-serif" font-size="12" fill="#000000">Active Drivers</text>
+  <rect x="670" y="240" width="30" height="20" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="685" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">USER</text>
+  <text x="440" y="290" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#000000">0</text>
+  <text x="440" y="315" font-family="Arial, sans-serif" font-size="10" fill="#000000">No drivers assigned</text>
+  
+  <!-- Stats Card 3: Total Investment -->
+  <rect x="740" y="230" width="300" height="120" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="760" y="255" font-family="Arial, sans-serif" font-size="12" fill="#000000">Total Investment</text>
+  <rect x="990" y="240" width="30" height="20" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="1005" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">$</text>
+  <text x="760" y="290" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#000000">₦0</text>
+  <text x="760" y="315" font-family="Arial, sans-serif" font-size="10" fill="#000000">Ready to invest</text>
+  
+  <!-- Stats Card 4: Monthly Returns -->
+  <rect x="1060" y="230" width="290" height="120" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="1080" y="255" font-family="Arial, sans-serif" font-size="12" fill="#000000">Monthly Returns</text>
+  <rect x="1300" y="240" width="30" height="20" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="1315" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">↗</text>
+  <text x="1080" y="290" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#000000">₦0</text>
+  <text x="1080" y="315" font-family="Arial, sans-serif" font-size="10" fill="#000000">No returns yet</text>
+  
+  <!-- Main Content Area -->
+  <text x="100" y="400" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#000000">Main Dashboard Content</text>
+  
+  <!-- Quick Actions Card -->
+  <rect x="100" y="420" width="620" height="300" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="120" y="450" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">Quick Actions</text>
+  <text x="120" y="470" font-family="Arial, sans-serif" font-size="12" fill="#000000">Get started with your investment journey</text>
+  
+  <!-- Action Button 1 -->
+  <rect x="120" y="490" width="580" height="50" fill="#000000" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="130" y="510" font-family="Arial, sans-serif" font-size="12" fill="#ffffff">+ Add New Vehicle</text>
+  <text x="130" y="525" font-family="Arial, sans-serif" font-size="10" fill="#ffffff">Register tricycles, buses, or bikes</text>
+  
+  <!-- Action Button 2 -->
+  <rect x="120" y="550" width="580" height="50" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="130" y="570" font-family="Arial, sans-serif" font-size="12" fill="#000000">🔍 Find Drivers</text>
+  <text x="130" y="585" font-family="Arial, sans-serif" font-size="10" fill="#000000">Connect with verified drivers</text>
+  
+  <!-- Action Button 3 -->
+  <rect x="120" y="610" width="580" height="50" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="130" y="630" font-family="Arial, sans-serif" font-size="12" fill="#000000">$ View Financial Reports</text>
+  <text x="130" y="645" font-family="Arial, sans-serif" font-size="10" fill="#000000">Track earnings and expenses</text>
+  
+  <!-- Recent Activity Card -->
+  <rect x="740" y="420" width="610" height="300" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="760" y="450" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">Recent Activity</text>
+  <text x="760" y="470" font-family="Arial, sans-serif" font-size="12" fill="#000000">Your latest transactions and updates</text>
+  
+  <!-- Empty State -->
+  <rect x="760" y="490" width="570" height="200" fill="#ffffff" stroke="#000000" stroke-width="1" stroke-dasharray="5,5" rx="4"/>
+  <circle cx="1045" cy="560" r="30" fill="#ffffff" stroke="#000000" stroke-width="1"/>
+  <text x="1045" y="570" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#000000">📈</text>
+  <text x="1045" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#000000">No recent activity</text>
+  <text x="1045" y="630" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Start by adding your first vehicle to see activity here</text>
+  
+  <!-- Getting Started Guide -->
+  <text x="100" y="770" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#000000">Getting Started Guide</text>
+  
+  <rect x="100" y="790" width="1250" height="280" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="120" y="820" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">! Getting Started as an Oga</text>
+  <text x="120" y="840" font-family="Arial, sans-serif" font-size="12" fill="#000000">Follow these steps to start your investment journey with Oga Driver</text>
+  
+  <!-- Step 1 -->
+  <rect x="150" y="860" width="350" height="180" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <circle cx="325" cy="890" r="20" fill="#000000" stroke="#000000" stroke-width="1"/>
+  <text x="325" y="898" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff">1</text>
+  <text x="325" y="925" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000000">Add Vehicles</text>
+  <text x="170" y="950" font-family="Arial, sans-serif" font-size="10" fill="#000000">Register your tricycles, buses,</text>
+  <text x="170" y="965" font-family="Arial, sans-serif" font-size="10" fill="#000000">or bikes to start earning</text>
+  
+  <!-- Vehicle Icons -->
+  <rect x="180" y="980" width="40" height="25" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="200" y="998" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">🚗</text>
+  <rect x="230" y="980" width="40" height="25" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="250" y="998" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">🚌</text>
+  <rect x="280" y="980" width="40" height="25" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="300" y="998" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">🏍️</text>
+  
+  <!-- Step 2 -->
+  <rect x="525" y="860" width="350" height="180" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <circle cx="700" cy="890" r="20" fill="#000000" stroke="#000000" stroke-width="1"/>
+  <text x="700" y="898" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff">2</text>
+  <text x="700" y="925" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000000">Find Drivers</text>
+  <text x="545" y="950" font-family="Arial, sans-serif" font-size="10" fill="#000000">Connect with verified drivers</text>
+  <text x="545" y="965" font-family="Arial, sans-serif" font-size="10" fill="#000000">to operate your vehicles</text>
+  
+  <!-- Driver Icons -->
+  <rect x="580" y="980" width="50" height="25" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="605" y="998" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">👤 Driver</text>
+  <rect x="640" y="980" width="50" height="25" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="665" y="998" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">✓ Verified</text>
+  
+  <!-- Step 3 -->
+  <rect x="900" y="860" width="350" height="180" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <circle cx="1075" cy="890" r="20" fill="#000000" stroke="#000000" stroke-width="1"/>
+  <text x="1075" y="898" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff">3</text>
+  <text x="1075" y="925" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000000">Earn Returns</text>
+  <text x="920" y="950" font-family="Arial, sans-serif" font-size="10" fill="#000000">Start receiving monthly</text>
+  <text x="920" y="965" font-family="Arial, sans-serif" font-size="10" fill="#000000">payments from your drivers</text>
+  
+  <!-- Money Icons -->
+  <rect x="950" y="980" width="40" height="25" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="970" y="998" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">₦₦₦</text>
+  <rect x="1000" y="980" width="50" height="25" fill="#ffffff" stroke="#000000" stroke-width="1" rx="2"/>
+  <text x="1025" y="998" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#000000">Monthly</text>
+  
+  <!-- Navigation Menu (Optional) -->
+  <text x="100" y="1120" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#000000">Navigation Menu (Optional)</text>
+  
+  <rect x="100" y="1140" width="1250" height="60" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  
+  <!-- Menu Items -->
+  <rect x="120" y="1155" width="100" height="30" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="170" y="1175" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Dashboard</text>
+  
+  <rect x="240" y="1155" width="100" height="30" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="290" y="1175" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Vehicles</text>
+  
+  <rect x="360" y="1155" width="100" height="30" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="410" y="1175" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Drivers</text>
+  
+  <rect x="480" y="1155" width="100" height="30" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="530" y="1175" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Finances</text>
+  
+  <rect x="600" y="1155" width="100" height="30" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="650" y="1175" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Reports</text>
+  
+  <rect x="720" y="1155" width="100" height="30" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="770" y="1175" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Settings</text>
+  
+  <!-- Footer Information -->
+  <text x="100" y="1250" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#000000">Design Features</text>
+  
+  <rect x="100" y="1270" width="1250" height="200" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <text x="120" y="1300" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000000">Dashboard Components:</text>
+  
+  <text x="120" y="1325" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Header with logo, welcome message, and action buttons (notifications, settings, logout)</text>
+  <text x="120" y="1345" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Statistics cards showing key metrics (vehicles, drivers, investment, returns)</text>
+  <text x="120" y="1365" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Quick actions panel for common tasks (add vehicle, find drivers, view reports)</text>
+  <text x="120" y="1385" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Recent activity feed with empty state for new users</text>
+  <text x="120" y="1405" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Getting started guide with step-by-step onboarding process</text>
+  <text x="120" y="1425" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Optional navigation menu for accessing different sections</text>
+  <text x="120" y="1445" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Responsive layout with clear visual hierarchy and consistent spacing</text>
+  
+  <!-- Technical Notes -->
+  <text x="100" y="1520" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#000000">Technical Implementation Notes</text>
+  
+  <rect x="100" y="1540" width="1250" height="180" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <text x="120" y="1570" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Grid-based layout using CSS Grid or Flexbox for responsive design</text>
+  <text x="120" y="1590" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Card components for modular content organization</text>
+  <text x="120" y="1610" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Icon integration for visual clarity and user experience</text>
+  <text x="120" y="1630" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Loading states and empty states for better user feedback</text>
+  <text x="120" y="1650" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Role-based access control (OGA owner permissions)</text>
+  <text x="120" y="1670" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Real-time data updates for statistics and activity feeds</text>
+  <text x="120" y="1690" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Mobile-first responsive design with touch-friendly interactions</text>
+</svg>

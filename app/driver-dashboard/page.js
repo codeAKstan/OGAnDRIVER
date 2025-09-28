@@ -109,7 +109,7 @@ export default function DriverDashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* KYC Status Banner */}
-        <Card className="bg-gradient-to-r from-green-900/20 to-green-800/20 border-green-500/30 mb-8">
+        <Card className="bg-[green] border-green-500/30 mb-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center">
               <CheckCircle className="w-6 h-6 text-green-500 mr-3" />

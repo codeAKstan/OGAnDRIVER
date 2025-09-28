@@ -1,0 +1,173 @@
+<svg width="1200" height="1600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="1600" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#212529">Driver Application Input Form - Wireframe</text>
+  
+  <!-- Header Section -->
+  <rect x="50" y="70" width="1100" height="80" fill="#ffffff" stroke="#000000" stroke-width="2" rx="8"/>
+  <text x="100" y="100" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">OGA DRIVER LOGO</text>
+  <text x="1050" y="100" font-family="Arial, sans-serif" font-size="14" fill="#000000">Back to Home</text>
+  <text x="100" y="125" font-family="Arial, sans-serif" font-size="14" fill="#000000">Driver KYC Application</text>
+  
+  <!-- Progress Indicator -->
+  <rect x="50" y="170" width="1100" height="60" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <text x="600" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000000">Application Progress</text>
+  
+  <!-- Step indicators -->
+  <circle cx="200" cy="210" r="15" fill="#000000" stroke="#000000" stroke-width="2"/>
+  <text x="200" y="216" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#ffffff">1</text>
+  <text x="200" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Personal</text>
+  
+  <line x1="215" y1="210" x2="385" y2="210" stroke="#000000" stroke-width="2"/>
+  
+  <circle cx="400" cy="210" r="15" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="400" y="216" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#000000">2</text>
+  <text x="400" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Contact</text>
+  
+  <line x1="415" y1="210" x2="585" y2="210" stroke="#000000" stroke-width="2"/>
+  
+  <circle cx="600" cy="210" r="15" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="600" y="216" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#000000">3</text>
+  <text x="600" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">ID and License</text>
+  
+  <line x1="615" y1="210" x2="785" y2="210" stroke="#000000" stroke-width="2"/>
+  
+  <circle cx="800" cy="210" r="15" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="800" y="216" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#000000">4</text>
+  <text x="800" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Emergency</text>
+  
+  <line x1="815" y1="210" x2="985" y2="210" stroke="#000000" stroke-width="2"/>
+  
+  <circle cx="1000" cy="210" r="15" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+  <text x="1000" y="216" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#000000">5</text>
+  <text x="1000" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">Review</text>
+  
+  <!-- Main Form Container -->
+  <rect x="50" y="270" width="1100" height="1000" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  
+  <!-- Form Title -->
+  <text x="100" y="310" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#000000">Step 1: Personal Information</text>
+  
+  <!-- Message/Alert Area -->
+  <rect x="100" y="330" width="1000" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <circle cx="120" cy="350" r="8" fill="#000000"/>
+  <text x="140" y="355" font-family="Arial, sans-serif" font-size="12" fill="#000000">Success/Error messages will appear here</text>
+  
+  <!-- Form Fields Section -->
+  <text x="100" y="400" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">Personal Details</text>
+  
+  <!-- Row 1: Date of Birth and Gender -->
+  <text x="100" y="430" font-family="Arial, sans-serif" font-size="12" fill="#000000">Date of Birth *</text>
+  <rect x="100" y="440" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="110" y="465" font-family="Arial, sans-serif" font-size="12" fill="#000000">DD/MM/YYYY</text>
+  
+  <text x="620" y="430" font-family="Arial, sans-serif" font-size="12" fill="#000000">Gender *</text>
+  <rect x="620" y="440" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="630" y="465" font-family="Arial, sans-serif" font-size="12" fill="#000000">Select gender</text>
+  <polygon points="1080,455 1090,460 1080,465" fill="#000000"/>
+  
+  <!-- Row 2: Marital Status and Nationality -->
+  <text x="100" y="510" font-family="Arial, sans-serif" font-size="12" fill="#000000">Marital Status</text>
+  <rect x="100" y="520" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="110" y="545" font-family="Arial, sans-serif" font-size="12" fill="#000000">Select status</text>
+  <polygon points="560,535 570,540 560,545" fill="#000000"/>
+  
+  <text x="620" y="510" font-family="Arial, sans-serif" font-size="12" fill="#000000">Nationality *</text>
+  <rect x="620" y="520" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="630" y="545" font-family="Arial, sans-serif" font-size="12" fill="#000000">Nigerian</text>
+  
+  <!-- Contact Information Section -->
+  <text x="100" y="600" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">Contact Information</text>
+  
+  <!-- Row 3: Phone Numbers -->
+  <text x="100" y="630" font-family="Arial, sans-serif" font-size="12" fill="#000000">Phone Number *</text>
+  <rect x="100" y="640" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <circle cx="120" cy="660" r="8" fill="#000000"/>
+  <text x="140" y="665" font-family="Arial, sans-serif" font-size="12" fill="#000000">+234 xxx xxx xxxx</text>
+  
+  <text x="620" y="630" font-family="Arial, sans-serif" font-size="12" fill="#000000">Alternate Phone</text>
+  <rect x="620" y="640" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <circle cx="640" cy="660" r="8" fill="#000000"/>
+  <text x="660" y="665" font-family="Arial, sans-serif" font-size="12" fill="#000000">+234 xxx xxx xxxx</text>
+  
+  <!-- Address Field -->
+  <text x="100" y="710" font-family="Arial, sans-serif" font-size="12" fill="#000000">Home Address *</text>
+  <rect x="100" y="720" width="1000" height="80" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="110" y="745" font-family="Arial, sans-serif" font-size="12" fill="#000000">Enter your full address</text>
+  
+  <!-- Row 4: City and State -->
+  <text x="100" y="830" font-family="Arial, sans-serif" font-size="12" fill="#000000">City *</text>
+  <rect x="100" y="840" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="110" y="865" font-family="Arial, sans-serif" font-size="12" fill="#000000">Enter city</text>
+  
+  <text x="620" y="830" font-family="Arial, sans-serif" font-size="12" fill="#000000">State *</text>
+  <rect x="620" y="840" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="630" y="865" font-family="Arial, sans-serif" font-size="12" fill="#000000">Select state</text>
+  <polygon points="1080,855 1090,860 1080,865" fill="#000000"/>
+  
+  <!-- ID and License Section -->
+  <text x="100" y="920" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">Identification and License</text>
+  
+  <!-- Row 5: ID Type and Number -->
+  <text x="100" y="950" font-family="Arial, sans-serif" font-size="12" fill="#000000">ID Type *</text>
+  <rect x="100" y="960" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="110" y="985" font-family="Arial, sans-serif" font-size="12" fill="#000000">Select ID type</text>
+  <polygon points="560,975 570,980 560,985" fill="#000000"/>
+  
+  <text x="620" y="950" font-family="Arial, sans-serif" font-size="12" fill="#000000">ID Number *</text>
+  <rect x="620" y="960" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="630" y="985" font-family="Arial, sans-serif" font-size="12" fill="#000000">Enter ID number</text>
+  
+  <!-- Row 6: License Details -->
+  <text x="100" y="1030" font-family="Arial, sans-serif" font-size="12" fill="#000000">Driver's License Number *</text>
+  <rect x="100" y="1040" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="110" y="1065" font-family="Arial, sans-serif" font-size="12" fill="#000000">Enter license number</text>
+  
+  <text x="620" y="1030" font-family="Arial, sans-serif" font-size="12" fill="#000000">License Expiry Date *</text>
+  <rect x="620" y="1040" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="630" y="1065" font-family="Arial, sans-serif" font-size="12" fill="#000000">DD/MM/YYYY</text>
+  
+  <!-- Years of Experience -->
+  <text x="100" y="1110" font-family="Arial, sans-serif" font-size="12" fill="#000000">Years of Driving Experience</text>
+  <rect x="100" y="1120" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="110" y="1145" font-family="Arial, sans-serif" font-size="12" fill="#000000">Enter years</text>
+  
+  <!-- File Upload Section -->
+  <text x="620" y="1110" font-family="Arial, sans-serif" font-size="12" fill="#000000">Upload Documents</text>
+  <rect x="620" y="1120" width="480" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" stroke-dasharray="5,5" rx="4"/>
+  <rect x="640" y="1130" width="20" height="20" fill="#000000"/>
+  <text x="670" y="1145" font-family="Arial, sans-serif" font-size="12" fill="#000000">Click to upload or drag files</text>
+  
+  <!-- Navigation Buttons -->
+  <rect x="100" y="1200" width="120" height="40" fill="#ffffff" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="160" y="1225" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#000000">Previous</text>
+  
+  <rect x="980" y="1200" width="120" height="40" fill="#000000" stroke="#000000" stroke-width="1" rx="4"/>
+  <text x="1040" y="1225" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff">Next Step</text>
+  
+  <!-- Footer Section -->
+  <rect x="50" y="1290" width="1100" height="80" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <text x="600" y="1320" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#000000">Required fields are marked with *</text>
+  <text x="600" y="1340" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#000000">All information will be kept confidential and secure</text>
+  <text x="600" y="1360" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#000000">By continuing, you agree to our Terms of Service and Privacy Policy</text>
+  
+  <!-- Side Panel - Form Validation Info -->
+  <rect x="50" y="1390" width="1100" height="180" fill="#ffffff" stroke="#000000" stroke-width="1" rx="8"/>
+  <text x="100" y="1420" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#000000">Form Features and Validation</text>
+  
+  <text x="100" y="1450" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Multi-step form with progress indicator</text>
+  <text x="100" y="1470" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Real-time field validation</text>
+  <text x="100" y="1490" font-family="Arial, sans-serif" font-size="12" fill="#000000">• File upload for documents (ID, License, Photos)</text>
+  <text x="100" y="1510" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Auto-save functionality</text>
+  <text x="100" y="1530" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Mobile-responsive design</text>
+  <text x="100" y="1550" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Success/Error message display</text>
+  
+  <text x="600" y="1450" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Emergency contact information</text>
+  <text x="600" y="1470" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Previous employment history</text>
+  <text x="600" y="1490" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Background check declarations</text>
+  <text x="600" y="1510" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Medical conditions disclosure</text>
+  <text x="600" y="1530" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Terms and conditions acceptance</text>
+  <text x="600" y="1550" font-family="Arial, sans-serif" font-size="12" fill="#000000">• Application review and submission</text>
+</svg>

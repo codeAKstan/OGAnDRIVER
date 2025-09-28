@@ -82,3 +82,48 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment of {self.amount} for {self.vehicle.registration_number}"
+
+
+class KYC(models.Model):
+    class VerificationStatus(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+        UNDER_REVIEW = "UNDER_REVIEW", "Under Review"
+
+    class DocumentType(models.TextChoices):
+        NATIONAL_ID = "NATIONAL_ID", "National ID"
+        DRIVERS_LICENSE = "DRIVERS_LICENSE", "Driver's License"
+        PASSPORT = "PASSPORT", "Passport"
+        VOTERS_CARD = "VOTERS_CARD", "Voter's Card"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='kyc')
+    
+    # Personal Information
+    full_name = models.CharField(max_length=200)
+    date_of_birth = models.DateField()
+    address = models.TextField()
+    
+    # Document Information
+    document_type = models.CharField(max_length=50, choices=DocumentType.choices)
+    document_number = models.CharField(max_length=50, unique=True)
+    document_front_image = models.URLField(max_length=500, blank=True, null=True)
+    document_back_image = models.URLField(max_length=500, blank=True, null=True)
+    
+    # Verification Status
+    status = models.CharField(max_length=50, choices=VerificationStatus.choices, default=VerificationStatus.PENDING)
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='kyc_verifications', limit_choices_to={'role': User.Role.ADMIN})
+    verification_notes = models.TextField(blank=True, null=True)
+    
+    # Timestamps
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"KYC for {self.user.username} - {self.status}"
+
+    class Meta:
+        verbose_name = "KYC Verification"
+        verbose_name_plural = "KYC Verifications"
