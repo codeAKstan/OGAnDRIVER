@@ -271,7 +271,7 @@ export default function DashboardPage() {
                     Add New Vehicle
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md">
+                <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md mx-4 max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="text-white">Add New Vehicle</DialogTitle>
                     <DialogDescription className="text-gray-400">
