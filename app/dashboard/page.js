@@ -32,7 +32,7 @@ export default function DashboardPage() {
     vehicle_type: '',
     model_name: '',
     registration_number: '',
-    photo_url: '',
+    photo: null,
     total_cost: '',
     amount_paid: ''
   })
@@ -73,12 +73,50 @@ export default function DashboardPage() {
       ...prev,
       [field]: value
     }))
+    
     // Clear error when user starts typing
     if (formErrors[field]) {
       setFormErrors(prev => ({
         ...prev,
         [field]: ''
       }))
+    }
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+      if (!validTypes.includes(file.type)) {
+        setFormErrors(prev => ({
+          ...prev,
+          photo: 'Please select a valid image file (JPEG, PNG, WebP)'
+        }))
+        return
+      }
+      
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormErrors(prev => ({
+          ...prev,
+          photo: 'File size must be less than 5MB'
+        }))
+        return
+      }
+      
+      setVehicleForm(prev => ({
+        ...prev,
+        photo: file
+      }))
+      
+      // Clear error when valid file is selected
+      if (formErrors.photo) {
+        setFormErrors(prev => ({
+          ...prev,
+          photo: ''
+        }))
+      }
     }
   }
 
@@ -101,6 +139,10 @@ export default function DashboardPage() {
       errors.total_cost = 'Valid total cost is required'
     }
     
+    if (!vehicleForm.photo) {
+      errors.photo = 'Vehicle photo is required'
+    }
+    
     if (vehicleForm.amount_paid && parseFloat(vehicleForm.amount_paid) < 0) {
       errors.amount_paid = 'Amount paid cannot be negative'
     }
@@ -121,21 +163,24 @@ export default function DashboardPage() {
     setIsSubmitting(true)
     
     try {
-      const vehicleData = {
-        ...vehicleForm,
-        total_cost: parseFloat(vehicleForm.total_cost),
-        amount_paid: vehicleForm.amount_paid ? parseFloat(vehicleForm.amount_paid) : 0,
-        owner: user.id
-      }
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('vehicle_type', vehicleForm.vehicle_type)
+      formData.append('model_name', vehicleForm.model_name)
+      formData.append('registration_number', vehicleForm.registration_number)
+      formData.append('photo', vehicleForm.photo)
+      formData.append('total_cost', parseFloat(vehicleForm.total_cost))
+      formData.append('amount_paid', vehicleForm.amount_paid ? parseFloat(vehicleForm.amount_paid) : 0)
+      formData.append('owner', user.id)
       
-      await apiService.addVehicle(vehicleData)
+      await apiService.addVehicle(formData)
       
       // Reset form and close modal
       setVehicleForm({
         vehicle_type: '',
         model_name: '',
         registration_number: '',
-        photo_url: '',
+        photo: null,
         total_cost: '',
         amount_paid: ''
       })
@@ -360,14 +405,20 @@ export default function DashboardPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="photo_url" className="text-white">Photo URL - Optional</Label>
+                      <Label htmlFor="photo" className="text-white">Vehicle Photo *</Label>
                       <Input
-                        id="photo_url"
-                        value={vehicleForm.photo_url}
-                        onChange={(e) => handleVehicleFormChange('photo_url', e.target.value)}
-                        placeholder="https://example.com/vehicle-photo.jpg"
-                        className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                        id="photo"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="bg-gray-800 border-gray-600 text-white file:bg-orange-500 file:text-black file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 hover:file:bg-orange-600"
                       />
+                      {formErrors.photo && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.photo}</p>
+                      )}
+                      {vehicleForm.photo && (
+                        <p className="text-green-400 text-sm mt-1">Selected: {vehicleForm.photo.name}</p>
+                      )}
                     </div>
                   </div>
                   
