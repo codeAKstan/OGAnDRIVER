@@ -143,12 +143,12 @@ export default function DashboardPage() {
       errors.photo = 'Vehicle photo is required'
     }
     
-    if (vehicleForm.amount_paid && parseFloat(vehicleForm.amount_paid) < 0) {
-      errors.amount_paid = 'Amount paid cannot be negative'
+    if (!vehicleForm.amount_paid || parseFloat(vehicleForm.amount_paid) <= 0) {
+      errors.amount_paid = 'Amount to pay back is required and must be greater than 0'
     }
     
     if (vehicleForm.amount_paid && parseFloat(vehicleForm.amount_paid) > parseFloat(vehicleForm.total_cost)) {
-      errors.amount_paid = 'Amount paid cannot exceed total cost'
+      errors.amount_paid = 'Amount to pay back cannot exceed total cost'
     }
     
     setFormErrors(errors)
@@ -170,7 +170,7 @@ export default function DashboardPage() {
       formData.append('registration_number', vehicleForm.registration_number)
       formData.append('photo', vehicleForm.photo)
       formData.append('total_cost', parseFloat(vehicleForm.total_cost))
-      formData.append('amount_paid', vehicleForm.amount_paid ? parseFloat(vehicleForm.amount_paid) : 0)
+      formData.append('amount_paid', parseFloat(vehicleForm.amount_paid))
       formData.append('owner', user.id)
       
       await apiService.addVehicle(formData)
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="amount_paid" className="text-white">Amount Paid (₦) - Optional</Label>
+                      <Label htmlFor="amount_paid" className="text-white">Amount to Pay Back (₦)</Label>
                       <Input
                         id="amount_paid"
                         type="number"
