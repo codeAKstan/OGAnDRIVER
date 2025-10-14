@@ -338,7 +338,7 @@ export default function DashboardPage() {
                           <SelectItem value="tricycle">Tricycle (Keke)</SelectItem>
                           <SelectItem value="bus">Bus</SelectItem>
                           <SelectItem value="bike">Motorcycle</SelectItem>
-                          <SelectItem value="car">Car</SelectItem>
+                          {/* <SelectItem value="car">Car</SelectItem> */}
                         </SelectContent>
                       </Select>
                       {formErrors.vehicle_type && (
