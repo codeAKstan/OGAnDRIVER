@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [vehicleCount, setVehicleCount] = useState(0)
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false)
   const [vehicleForm, setVehicleForm] = useState({
     vehicle_type: '',
@@ -52,6 +53,24 @@ export default function DashboardPage() {
     setUser(JSON.parse(userData))
     setLoading(false)
   }, [])
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        if (!user?.id) return
+        const vehicles = await apiService.getVehicles(user.id)
+        if (Array.isArray(vehicles)) {
+          setVehicleCount(vehicles.length)
+        } else if (vehicles && vehicles.results) {
+          // In case pagination is added later
+          setVehicleCount(vehicles.results.length)
+        }
+      } catch (error) {
+        console.error('Failed to load vehicles:', error)
+      }
+    }
+    fetchVehicles()
+  }, [user])
 
   const handleLogout = async () => {
     try {
@@ -159,22 +178,38 @@ export default function DashboardPage() {
     if (!validateForm()) {
       return
     }
-    
+
     setIsSubmitting(true)
-    
+
     try {
-      // Create FormData for file upload
-      const formData = new FormData()
-      formData.append('vehicle_type', vehicleForm.vehicle_type)
-      formData.append('model_name', vehicleForm.model_name)
-      formData.append('registration_number', vehicleForm.registration_number)
-      formData.append('photo', vehicleForm.photo)
-      formData.append('total_cost', parseFloat(vehicleForm.total_cost))
-      formData.append('amount_paid', parseFloat(vehicleForm.amount_paid))
-      formData.append('owner', user.id)
-      
-      await apiService.addVehicle(formData)
-      
+      // Upload image to Vercel Blob first
+      const file = vehicleForm.photo
+      const uploadRes = await fetch(`/api/blob/upload?filename=${encodeURIComponent(file.name)}`, {
+        method: 'POST',
+        body: file,
+      })
+
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json().catch(() => ({ error: 'Upload failed' }))
+        throw new Error(err.error || 'Image upload failed')
+      }
+
+      const blob = await uploadRes.json()
+      const photoUrl = blob.url
+
+      // Prepare JSON payload for Django backend
+      const payload = {
+        vehicle_type: vehicleForm.vehicle_type,
+        model_name: vehicleForm.model_name,
+        registration_number: vehicleForm.registration_number,
+        photo_url: photoUrl,
+        total_cost: parseFloat(vehicleForm.total_cost),
+        amount_paid: parseFloat(vehicleForm.amount_paid),
+        owner: user.id,
+      }
+
+      await apiService.addVehicle(payload)
+
       // Reset form and close modal
       setVehicleForm({
         vehicle_type: '',
@@ -185,13 +220,21 @@ export default function DashboardPage() {
         amount_paid: ''
       })
       setIsAddVehicleOpen(false)
-      
-      // Show success message (you might want to add a toast notification here)
+
+      // Refresh vehicle count
+      try {
+        const updated = await apiService.getVehicles(user.id)
+        const count = Array.isArray(updated) ? updated.length : (updated?.results?.length || 0)
+        setVehicleCount(count)
+      } catch (e) {
+        console.error('Failed to refresh vehicle count:', e)
+      }
+
       alert('Vehicle added successfully!')
-      
+
     } catch (error) {
       console.error('Error adding vehicle:', error)
-      alert('Failed to add vehicle. Please try again.')
+      alert(error.message || 'Failed to add vehicle. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -260,8 +303,8 @@ export default function DashboardPage() {
               <Car className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">0</div>
-              <p className="text-xs text-gray-500">No vehicles yet</p>
+              <div className="text-2xl font-bold text-white">{vehicleCount}</div>
+              <p className="text-xs text-gray-500">{vehicleCount === 0 ? 'No vehicles yet' : 'Your registered vehicles'}</p>
             </CardContent>
           </Card>
           
@@ -335,9 +378,9 @@ export default function DashboardPage() {
                           <SelectValue placeholder="Select vehicle type" />
                         </SelectTrigger>
                         <SelectContent className="bg-gray-800 border-gray-600">
-                          <SelectItem value="tricycle">Tricycle (Keke)</SelectItem>
-                          <SelectItem value="bus">Bus</SelectItem>
-                          <SelectItem value="bike">Motorcycle</SelectItem>
+                          <SelectItem value="KEKE">Tricycle (Keke)</SelectItem>
+                          <SelectItem value="BUS">Bus</SelectItem>
+                          <SelectItem value="BIKE">Motorcycle</SelectItem>
                           {/* <SelectItem value="car">Car</SelectItem> */}
                         </SelectContent>
                       </Select>
@@ -445,6 +488,12 @@ export default function DashboardPage() {
                 <Search className="w-4 h-4 mr-2" />
                 Find Drivers
               </Button>
+              <Link href="/dashboard/fleet" className="block">
+                <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
+                  <Car className="w-4 h-4 mr-2" />
+                  View Fleet
+                </Button>
+              </Link>
               <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
                 <DollarSign className="w-4 h-4 mr-2" />
                 View Financial Reports

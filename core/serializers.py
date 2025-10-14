@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from .models import Vehicle
 
 User = get_user_model()
 
@@ -17,31 +18,32 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'first_name': {'required': True},
             'last_name': {'required': True},
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Restrict role choices for public registration
-        self.fields['role'].choices = [
-            (User.Role.OWNER, 'Oga'),
-            (User.Role.DRIVER, 'Driver')
-        ]
-    
+        if 'role' in self.fields:
+            self.fields['role'].choices = [
+                (User.Role.OWNER, 'Oga'),
+                (User.Role.DRIVER, 'Driver')
+            ]
+
     def validate_role(self, value):
         # Only allow OGA and DRIVER roles for public registration
         if value not in [User.Role.OWNER, User.Role.DRIVER]:
             raise serializers.ValidationError("Invalid role selection. Only 'OGA' and 'DRIVER' roles are allowed for registration.")
         return value
-    
+
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return value
-    
+
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("A user with this username already exists.")
         return value
-    
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError("Password fields didn't match.")
@@ -53,7 +55,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': e.messages})
         
         return attrs
-    
+
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
@@ -63,6 +65,25 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             **validated_data
         )
         return user
+
+
+class VehicleSerializer(serializers.ModelSerializer):
+    owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.Role.OWNER))
+
+    class Meta:
+        model = Vehicle
+        fields = (
+            'id', 'vehicle_type', 'model_name', 'registration_number', 'photo_url',
+            'total_cost', 'amount_paid', 'owner', 'is_active', 'is_fully_paid',
+            'created_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'is_active', 'is_fully_paid', 'created_at', 'updated_at')
+
+    def create(self, validated_data):
+        total_cost = validated_data.get('total_cost')
+        amount_paid = validated_data.get('amount_paid', 0)
+        validated_data['is_fully_paid'] = amount_paid >= total_cost
+        return super().create(validated_data)
 
 # Admin-only serializer for creating admin users
 class AdminUserCreationSerializer(serializers.ModelSerializer):

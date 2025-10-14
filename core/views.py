@@ -4,7 +4,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser
 from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib.auth.models import AnonymousUser
-from .serializers import UserRegistrationSerializer, UserSerializer, AdminUserCreationSerializer, LoginSerializer
+from .serializers import (
+    UserRegistrationSerializer,
+    UserSerializer,
+    AdminUserCreationSerializer,
+    LoginSerializer,
+    VehicleSerializer,
+)
+from .models import Vehicle
 
 User = get_user_model()
 
@@ -88,3 +95,16 @@ def logout_view(request):
 @permission_classes([AllowAny])
 def health_check(request):
     return Response({'status': 'API is running'}, status=status.HTTP_200_OK)
+
+
+class VehicleCreateView(generics.ListCreateAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        owner_id = self.request.query_params.get('owner')
+        if owner_id:
+            queryset = queryset.filter(owner_id=owner_id)
+        return queryset
