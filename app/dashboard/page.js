@@ -163,11 +163,11 @@ export default function DashboardPage() {
     }
     
     if (!vehicleForm.amount_paid || parseFloat(vehicleForm.amount_paid) <= 0) {
-      errors.amount_paid = 'Amount to pay back is required and must be greater than 0'
+      errors.amount_paid = 'Amount paid is required and must be greater than 0'
     }
     
     if (vehicleForm.amount_paid && parseFloat(vehicleForm.amount_paid) > parseFloat(vehicleForm.total_cost)) {
-      errors.amount_paid = 'Amount to pay back cannot exceed total cost'
+      errors.amount_paid = 'Amount paid cannot exceed total cost'
     }
     
     setFormErrors(errors)
@@ -433,7 +433,7 @@ export default function DashboardPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="amount_paid" className="text-white">Amount to Pay Back (₦)</Label>
+                      <Label htmlFor="amount_paid" className="text-white">Amount paid (₦)</Label>
                       <Input
                         id="amount_paid"
                         type="number"
@@ -486,7 +486,7 @@ export default function DashboardPage() {
               
               <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
                 <Search className="w-4 h-4 mr-2" />
-                Find Drivers
+                Review Drivers
               </Button>
               <Link href="/dashboard/fleet" className="block">
                 <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
@@ -529,7 +529,7 @@ export default function DashboardPage() {
               <span className="bg-orange-500 text-black rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3">!</span>
               Getting Started as an Oga
             </CardTitle>
-            <CardDescription className="text-gray-300">
+            <CardDescription className="text-black">
               Follow these steps to start your investment journey with Oga Driver
             </CardDescription>
           </CardHeader>
@@ -542,7 +542,7 @@ export default function DashboardPage() {
               </div>
               <div className="text-center p-4 bg-gray-900/50 rounded-lg">
                 <div className="bg-orange-500 text-black rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mx-auto mb-3">2</div>
-                <h3 className="font-semibold text-white mb-2">Find Drivers</h3>
+                <h3 className="font-semibold text-white mb-2">View Drivers Applications</h3>
                 <p className="text-sm text-gray-400">Connect with verified drivers to operate your vehicles</p>
               </div>
               <div className="text-center p-4 bg-gray-900/50 rounded-lg">

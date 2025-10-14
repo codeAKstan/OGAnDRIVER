@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation"
 import apiService from "@/lib/api"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Car, ArrowLeft } from "lucide-react"
 
 export default function FleetPage() {
@@ -14,6 +18,16 @@ export default function FleetPage() {
   const [loading, setLoading] = useState(true)
   const [vehicles, setVehicles] = useState([])
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [editVehicle, setEditVehicle] = useState(null)
+  const [editForm, setEditForm] = useState({
+    vehicle_type: '',
+    model_name: '',
+    registration_number: '',
+    total_cost: '',
+    amount_paid: '',
+    photo: null,
+  })
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -42,6 +56,65 @@ export default function FleetPage() {
     }
     loadVehicles()
   }, [user])
+
+  const openEdit = (v) => {
+    setEditVehicle(v)
+    setEditForm({
+      vehicle_type: v.vehicle_type || '',
+      model_name: v.model_name || '',
+      registration_number: v.registration_number || '',
+      total_cost: String(v.total_cost || ''),
+      amount_paid: String(v.amount_paid || ''),
+      photo: null,
+    })
+    setIsEditOpen(true)
+  }
+
+  const handleEditChange = (field, value) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleEditFileChange = (e) => {
+    const file = e.target.files?.[0] || null
+    setEditForm((prev) => ({ ...prev, photo: file }))
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editVehicle) return
+    try {
+      const payload = {
+        vehicle_type: editForm.vehicle_type,
+        model_name: editForm.model_name.trim(),
+        registration_number: editForm.registration_number.trim(),
+        total_cost: parseFloat(editForm.total_cost),
+        amount_paid: parseFloat(editForm.amount_paid),
+      }
+
+      // If photo updated, upload to Blob and include photo_url
+      if (editForm.photo) {
+        const file = editForm.photo
+        const uploadRes = await fetch(`/api/blob/upload?filename=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          body: file,
+        })
+        const blob = await uploadRes.json().catch(() => null)
+        if (!uploadRes.ok || !blob?.url) {
+          throw new Error('Image upload failed')
+        }
+        payload.photo_url = blob.url
+      }
+
+      await apiService.updateVehicle(editVehicle.id, payload)
+      // Refresh list
+      const data = await apiService.getVehicles(user.id)
+      setVehicles(Array.isArray(data) ? data : (data?.results || []))
+      setIsEditOpen(false)
+      setEditVehicle(null)
+    } catch (error) {
+      console.error('Failed to update vehicle:', error)
+      alert(error.message || 'Update failed')
+    }
+  }
 
   if (loading) {
     return (
@@ -102,6 +175,15 @@ export default function FleetPage() {
                       <p className="text-sm text-gray-400">Status: {v.is_active ? 'Active' : 'Inactive'}</p>
                       <p className="text-sm text-gray-400">Paid: ₦{Number(v.amount_paid).toLocaleString()} / ₦{Number(v.total_cost).toLocaleString()}</p>
                       <p className="text-sm text-gray-400">Fully Paid: {v.is_fully_paid ? 'Yes' : 'No'}</p>
+                      <div className="pt-2">
+                        {v.driver ? (
+                          <span className="text-xs text-gray-500">Assigned — editing locked</span>
+                        ) : (
+                          <Button variant="outline" className="border-gray-600 text-black hover:bg-gray-800" onClick={() => openEdit(v)}>
+                            Edit Vehicle
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -109,6 +191,62 @@ export default function FleetPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Edit Vehicle Dialog */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-white">Edit Vehicle</DialogTitle>
+              <DialogDescription className="text-gray-400">Update details for your vehicle. Editing is only allowed if not assigned.</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="vehicle_type" className="text-white">Vehicle Type</Label>
+                <Select value={editForm.vehicle_type} onValueChange={(v) => handleEditChange('vehicle_type', v)}>
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectValue placeholder="Select vehicle type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectItem value="KEKE">Tricycle (Keke)</SelectItem>
+                    <SelectItem value="BUS">Bus</SelectItem>
+                    <SelectItem value="BIKE">Motorcycle</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="model_name" className="text-white">Model Name</Label>
+                <Input id="model_name" value={editForm.model_name} onChange={(e) => handleEditChange('model_name', e.target.value)} className="bg-gray-800 border-gray-600 text-white" />
+              </div>
+
+              <div>
+                <Label htmlFor="registration_number" className="text-white">Registration Number</Label>
+                <Input id="registration_number" value={editForm.registration_number} onChange={(e) => handleEditChange('registration_number', e.target.value)} className="bg-gray-800 border-gray-600 text-white" />
+              </div>
+
+              <div>
+                <Label htmlFor="total_cost" className="text-white">Total Cost (₦)</Label>
+                <Input id="total_cost" type="number" value={editForm.total_cost} onChange={(e) => handleEditChange('total_cost', e.target.value)} className="bg-gray-800 border-gray-600 text-white" />
+              </div>
+
+              <div>
+                <Label htmlFor="amount_paid" className="text-white">Amount Paid (₦)</Label>
+                <Input id="amount_paid" type="number" value={editForm.amount_paid} onChange={(e) => handleEditChange('amount_paid', e.target.value)} className="bg-gray-800 border-gray-600 text-white" />
+              </div>
+
+              <div>
+                <Label htmlFor="photo" className="text-white">Vehicle Photo</Label>
+                <Input id="photo" type="file" accept="image/*" onChange={handleEditFileChange} className="bg-gray-800 border-gray-600 text-white file:bg-orange-500 file:text-black file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 hover:file:bg-orange-600" />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black" onClick={handleSaveEdit}>Save Changes</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )

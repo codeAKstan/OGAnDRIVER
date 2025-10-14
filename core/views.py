@@ -108,3 +108,19 @@ class VehicleCreateView(generics.ListCreateAPIView):
         if owner_id:
             queryset = queryset.filter(owner_id=owner_id)
         return queryset
+
+class VehicleDetailView(generics.RetrieveUpdateAPIView):
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+    permission_classes = [AllowAny]
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        # Block edits if vehicle already assigned to a driver
+        if instance.driver is not None:
+            return Response({'error': 'Vehicle is assigned and cannot be edited.'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)

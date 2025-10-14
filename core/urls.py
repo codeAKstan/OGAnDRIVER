@@ -8,4 +8,5 @@ urlpatterns = [
     path('admin/create-user/', views.AdminUserCreationView.as_view(), name='admin_create_user'),
     path('health/', views.health_check, name='health_check'),
     path('vehicles/', views.VehicleCreateView.as_view(), name='vehicle_create'),
+    path('vehicles/<uuid:pk>/', views.VehicleDetailView.as_view(), name='vehicle_detail'),
 ]

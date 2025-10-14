@@ -69,12 +69,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 class VehicleSerializer(serializers.ModelSerializer):
     owner = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.Role.OWNER))
+    driver = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.Role.DRIVER), allow_null=True, required=False)
 
     class Meta:
         model = Vehicle
         fields = (
             'id', 'vehicle_type', 'model_name', 'registration_number', 'photo_url',
-            'total_cost', 'amount_paid', 'owner', 'is_active', 'is_fully_paid',
+            'total_cost', 'amount_paid', 'owner', 'driver', 'is_active', 'is_fully_paid',
             'created_at', 'updated_at'
         )
         read_only_fields = ('id', 'is_active', 'is_fully_paid', 'created_at', 'updated_at')
@@ -84,6 +85,15 @@ class VehicleSerializer(serializers.ModelSerializer):
         amount_paid = validated_data.get('amount_paid', 0)
         validated_data['is_fully_paid'] = amount_paid >= total_cost
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        # Prevent owner change through update
+        validated_data.pop('owner', None)
+        # Recompute is_fully_paid if total_cost or amount_paid provided
+        total_cost = validated_data.get('total_cost', instance.total_cost)
+        amount_paid = validated_data.get('amount_paid', instance.amount_paid)
+        instance.is_fully_paid = amount_paid >= total_cost
+        return super().update(instance, validated_data)
 
 # Admin-only serializer for creating admin users
 class AdminUserCreationSerializer(serializers.ModelSerializer):
