@@ -28,6 +28,9 @@ export default function DashboardPage() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [vehicleCount, setVehicleCount] = useState(0)
+  const [totalInvestment, setTotalInvestment] = useState(0)
+  const [amountReceived, setAmountReceived] = useState(0)
+  const [outstandingReceivable, setOutstandingReceivable] = useState(0)
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false)
   const [vehicleForm, setVehicleForm] = useState({
     vehicle_type: '',
@@ -39,6 +42,15 @@ export default function DashboardPage() {
   })
   const [formErrors, setFormErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const formatNGN = (amount) => {
+    const n = Number(amount || 0)
+    try {
+      return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(n)
+    } catch {
+      return `₦${n.toLocaleString('en-NG')}`
+    }
+  }
 
   useEffect(() => {
     // Check if user is logged in and has the right role
@@ -59,12 +71,19 @@ export default function DashboardPage() {
       try {
         if (!user?.id) return
         const vehicles = await apiService.getVehicles(user.id)
-        if (Array.isArray(vehicles)) {
-          setVehicleCount(vehicles.length)
-        } else if (vehicles && vehicles.results) {
-          // In case pagination is added later
-          setVehicleCount(vehicles.results.length)
-        }
+        const list = Array.isArray(vehicles) ? vehicles : (vehicles?.results || [])
+        setVehicleCount(list.length)
+        const total = list.reduce((acc, v) => acc + parseFloat(v?.total_cost ?? 0), 0)
+        setTotalInvestment(total)
+        const received = list.reduce((acc, v) => acc + parseFloat(v?.amount_paid ?? 0), 0)
+        setAmountReceived(received)
+        const outstanding = list.reduce((acc, v) => {
+          const tc = parseFloat(v?.total_cost ?? 0)
+          const ap = parseFloat(v?.amount_paid ?? 0)
+          const bal = tc - ap
+          return acc + (bal > 0 ? bal : 0)
+        }, 0)
+        setOutstandingReceivable(outstanding)
       } catch (error) {
         console.error('Failed to load vehicles:', error)
       }
@@ -224,8 +243,19 @@ export default function DashboardPage() {
       // Refresh vehicle count
       try {
         const updated = await apiService.getVehicles(user.id)
-        const count = Array.isArray(updated) ? updated.length : (updated?.results?.length || 0)
-        setVehicleCount(count)
+        const list = Array.isArray(updated) ? updated : (updated?.results || [])
+        setVehicleCount(list.length)
+        const total = list.reduce((acc, v) => acc + parseFloat(v?.total_cost ?? 0), 0)
+        setTotalInvestment(total)
+        const received = list.reduce((acc, v) => acc + parseFloat(v?.amount_paid ?? 0), 0)
+        setAmountReceived(received)
+        const outstanding = list.reduce((acc, v) => {
+          const tc = parseFloat(v?.total_cost ?? 0)
+          const ap = parseFloat(v?.amount_paid ?? 0)
+          const bal = tc - ap
+          return acc + (bal > 0 ? bal : 0)
+        }, 0)
+        setOutstandingReceivable(outstanding)
       } catch (e) {
         console.error('Failed to refresh vehicle count:', e)
       }
@@ -325,8 +355,30 @@ export default function DashboardPage() {
               <DollarSign className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">₦0</div>
-              <p className="text-xs text-gray-500">Ready to invest</p>
+              <div className="text-2xl font-bold text-white">{formatNGN(totalInvestment)}</div>
+              <p className="text-xs text-gray-500">{vehicleCount === 0 ? 'Ready to invest' : 'Committed capital'}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-400">Amount Received</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{formatNGN(amountReceived)}</div>
+              <p className="text-xs text-gray-500">Cash collected so far</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-400">Outstanding Receivable</CardTitle>
+              <DollarSign className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{formatNGN(outstandingReceivable)}</div>
+              <p className="text-xs text-gray-500">Remaining balance to collect</p>
             </CardContent>
           </Card>
           
