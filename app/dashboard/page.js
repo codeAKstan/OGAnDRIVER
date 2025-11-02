@@ -95,15 +95,8 @@ export default function DashboardPage() {
         // Total receivable from backend (vehicle cost + interest)
         const receivable = list.reduce((acc, v) => acc + parseFloat(v?.total_receivable ?? 0), 0)
         setTotalReceivable(receivable)
-        // Weekly returns computed per vehicle plan (sum of receivable / weeks)
-        const durationToWeeks = { 12: 52, 18: 78, 24: 104 }
-        const weekly = list.reduce((acc, v) => {
-          const tr = parseFloat(v?.total_receivable ?? 0)
-          const d = typeof v?.repayment_duration === 'string' ? parseInt(v?.repayment_duration, 10) : v?.repayment_duration
-          const weeks = durationToWeeks[d] || 0
-          if (!tr || !weeks) return acc
-          return acc + (tr / weeks)
-        }, 0)
+        // Weekly returns from backend (sum of weekly_returns field)
+        const weekly = list.reduce((acc, v) => acc + parseFloat(v?.weekly_returns ?? 0), 0)
         setWeeklyReturns(weekly)
       } catch (error) {
         console.error('Failed to load vehicles:', error)
@@ -268,14 +261,7 @@ export default function DashboardPage() {
         setAmountReceived(received)
         const receivable = list.reduce((acc, v) => acc + parseFloat(v?.total_receivable ?? 0), 0)
         setTotalReceivable(receivable)
-        const durationToWeeks = { 12: 52, 18: 78, 24: 104 }
-        const weekly = list.reduce((acc, v) => {
-          const tr = parseFloat(v?.total_receivable ?? 0)
-          const d = typeof v?.repayment_duration === 'string' ? parseInt(v?.repayment_duration, 10) : v?.repayment_duration
-          const weeks = durationToWeeks[d] || 0
-          if (!tr || !weeks) return acc
-          return acc + (tr / weeks)
-        }, 0)
+        const weekly = list.reduce((acc, v) => acc + parseFloat(v?.weekly_returns ?? 0), 0)
         setWeeklyReturns(weekly)
       } catch (e) {
         console.error('Failed to refresh vehicle count:', e)

@@ -37,6 +37,7 @@ class Vehicle(models.Model):
     repayment_duration = models.IntegerField(choices=[(12, '12'), (18, '18'), (24, '24')], null=True, blank=True)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     total_receivable = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    weekly_returns = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
 
     # Status
     is_active = models.BooleanField(default=True)
@@ -44,6 +45,19 @@ class Vehicle(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        # Calculate weekly returns using precise week mapping
+        if self.total_receivable and self.repayment_duration:
+            duration_to_weeks = {12: 52, 18: 78, 24: 104}
+            weeks = duration_to_weeks.get(self.repayment_duration, 0)
+            if weeks:
+                self.weekly_returns = self.total_receivable / weeks
+            else:
+                self.weekly_returns = 0
+        else:
+            self.weekly_returns = 0
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.model_name} - {self.registration_number}"

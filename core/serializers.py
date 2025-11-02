@@ -76,10 +76,10 @@ class VehicleSerializer(serializers.ModelSerializer):
         model = Vehicle
         fields = (
             'id', 'vehicle_type', 'model_name', 'registration_number', 'photo_url',
-            'total_cost', 'amount_paid', 'repayment_duration', 'interest_rate', 'total_receivable',
+            'total_cost', 'amount_paid', 'repayment_duration', 'interest_rate', 'total_receivable', 'weekly_returns',
             'owner', 'driver', 'is_active', 'is_fully_paid', 'created_at', 'updated_at'
         )
-        read_only_fields = ('id', 'interest_rate', 'total_receivable', 'is_active', 'is_fully_paid', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'interest_rate', 'total_receivable', 'weekly_returns', 'is_active', 'is_fully_paid', 'created_at', 'updated_at')
 
     def create(self, validated_data):
         total_cost = Decimal(str(validated_data.get('total_cost', '0')))

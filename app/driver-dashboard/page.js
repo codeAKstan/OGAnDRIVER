@@ -165,6 +165,24 @@ export default function DriverDashboardPage() {
           </Card>
         )}
 
+        {/* Available Vehicles CTA */}
+        <Card className="bg-gray-900 border-gray-700 mb-8">
+          <CardHeader>
+            <CardTitle className="text-white">Browse Available Vehicles</CardTitle>
+            <CardDescription className="text-gray-400">
+              Explore vehicles currently open for hire purchase. Apply after your KYC is approved.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              View makes, models, repayment plans and weekly returns.
+            </p>
+            <Link href="/driver-dashboard/available-vehicles">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black">See Available Vehicles</Button>
+            </Link>
+          </CardContent>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gray-900 border-gray-700">
