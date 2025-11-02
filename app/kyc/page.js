@@ -99,6 +99,15 @@ export default function KYCPage() {
     })
   }
 
+  const handleSkip = () => {
+    try {
+      localStorage.setItem('kycStatus', 'SKIPPED')
+    } catch (e) {
+      console.error('Failed to set KYC status:', e)
+    }
+    router.push('/driver-dashboard')
+  }
+
   const validateStep = (step) => {
     switch (step) {
       case 1:
@@ -141,6 +150,12 @@ export default function KYCPage() {
         type: "success", 
         text: "KYC information submitted successfully! Your application is under review." 
       })
+
+      try {
+        localStorage.setItem('kycStatus', 'SUBMITTED')
+      } catch (e) {
+        console.error('Failed to set KYC status:', e)
+      }
       
       // Redirect to driver dashboard after successful submission
       setTimeout(() => {
@@ -507,9 +522,17 @@ export default function KYCPage() {
                 className="object-contain"
               />
             </Link>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
               <Shield className="w-5 h-5 text-orange-500" />
               <span className="text-sm text-gray-400">Secure KYC Process</span>
+              <Button
+                variant="ghost"
+                className="text-gray-300 hover:text-white hover:bg-gray-800"
+                type="button"
+                onClick={handleSkip}
+              >
+                Skip for now
+              </Button>
             </div>
           </div>
         </div>

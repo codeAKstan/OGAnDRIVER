@@ -23,6 +23,7 @@ export default function DriverDashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [kycStatus, setKycStatus] = useState(null)
 
   useEffect(() => {
     // Check if user is logged in and has the right role
@@ -35,6 +36,8 @@ export default function DriverDashboardPage() {
     }
     
     setUser(JSON.parse(userData))
+    const status = localStorage.getItem('kycStatus') || null
+    setKycStatus(status)
     setLoading(false)
   }, [])
 
@@ -109,17 +112,39 @@ export default function DriverDashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* KYC Status Banner */}
-        <Card className="bg-[green] border-green-500/30 mb-8">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              <CheckCircle className="w-6 h-6 text-green-500 mr-3" />
-              KYC Verification Complete
-            </CardTitle>
-            <CardDescription className="text-gray-300">
-              Your KYC verification has been submitted and is under review. You'll be notified once approved.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        {kycStatus === 'SUBMITTED' ? (
+          <Card className="bg-[green] border-green-500/30 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <CheckCircle className="w-6 h-6 text-green-500 mr-3" />
+                KYC Verification Complete
+              </CardTitle>
+              <CardDescription className="text-gray-300">
+                Your KYC verification has been submitted and is under review. You'll be notified once approved.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ) : (
+          <Card className="bg-orange-900/20 border-orange-500/30 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <AlertTriangle className="w-6 h-6 text-orange-500 mr-3" />
+                Complete your KYC
+              </CardTitle>
+              <CardDescription className="text-gray-300">
+                You haven’t completed your KYC. Complete it to proceed.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                className="bg-orange-500 hover:bg-orange-600 text-black"
+                onClick={() => router.push('/kyc')}
+              >
+                Go to KYC
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
