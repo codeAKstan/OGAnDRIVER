@@ -30,7 +30,8 @@ export default function DashboardPage() {
   const [vehicleCount, setVehicleCount] = useState(0)
   const [totalInvestment, setTotalInvestment] = useState(0)
   const [amountReceived, setAmountReceived] = useState(0)
-  const [outstandingReceivable, setOutstandingReceivable] = useState(0)
+  const [totalReceivable, setTotalReceivable] = useState(0)
+  const [weeklyReturns, setWeeklyReturns] = useState(0)
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false)
   const [vehicleForm, setVehicleForm] = useState({
     vehicle_type: '',
@@ -38,10 +39,24 @@ export default function DashboardPage() {
     registration_number: '',
     photo: null,
     total_cost: '',
-    amount_paid: ''
+    repayment_duration: ''
   })
   const [formErrors, setFormErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Repayment plans mapping
+  const repaymentPlans = {
+    '12': { months: 12, weeks: 52, rate: 0.30 },
+    '18': { months: 18, weeks: 78, rate: 0.45 },
+    '24': { months: 24, weeks: 104, rate: 0.50 },
+  }
+
+  const computeReceivable = () => {
+    const cost = parseFloat(vehicleForm.total_cost || 0)
+    const plan = repaymentPlans[vehicleForm.repayment_duration]
+    if (!plan || !cost || cost <= 0) return 0
+    return cost * (1 + plan.rate)
+  }
 
   const formatNGN = (amount) => {
     const n = Number(amount || 0)
@@ -77,13 +92,19 @@ export default function DashboardPage() {
         setTotalInvestment(total)
         const received = list.reduce((acc, v) => acc + parseFloat(v?.amount_paid ?? 0), 0)
         setAmountReceived(received)
-        const outstanding = list.reduce((acc, v) => {
-          const tc = parseFloat(v?.total_cost ?? 0)
-          const ap = parseFloat(v?.amount_paid ?? 0)
-          const bal = tc - ap
-          return acc + (bal > 0 ? bal : 0)
+        // Total receivable from backend (vehicle cost + interest)
+        const receivable = list.reduce((acc, v) => acc + parseFloat(v?.total_receivable ?? 0), 0)
+        setTotalReceivable(receivable)
+        // Weekly returns computed per vehicle plan (sum of receivable / weeks)
+        const durationToWeeks = { 12: 52, 18: 78, 24: 104 }
+        const weekly = list.reduce((acc, v) => {
+          const tr = parseFloat(v?.total_receivable ?? 0)
+          const d = typeof v?.repayment_duration === 'string' ? parseInt(v?.repayment_duration, 10) : v?.repayment_duration
+          const weeks = durationToWeeks[d] || 0
+          if (!tr || !weeks) return acc
+          return acc + (tr / weeks)
         }, 0)
-        setOutstandingReceivable(outstanding)
+        setWeeklyReturns(weekly)
       } catch (error) {
         console.error('Failed to load vehicles:', error)
       }
@@ -181,12 +202,8 @@ export default function DashboardPage() {
       errors.photo = 'Vehicle photo is required'
     }
     
-    if (!vehicleForm.amount_paid || parseFloat(vehicleForm.amount_paid) <= 0) {
-      errors.amount_paid = 'Amount paid is required and must be greater than 0'
-    }
-    
-    if (vehicleForm.amount_paid && parseFloat(vehicleForm.amount_paid) > parseFloat(vehicleForm.total_cost)) {
-      errors.amount_paid = 'Amount paid cannot exceed total cost'
+    if (!vehicleForm.repayment_duration) {
+      errors.repayment_duration = 'Please select a repayment duration'
     }
     
     setFormErrors(errors)
@@ -223,7 +240,7 @@ export default function DashboardPage() {
         registration_number: vehicleForm.registration_number,
         photo_url: photoUrl,
         total_cost: parseFloat(vehicleForm.total_cost),
-        amount_paid: parseFloat(vehicleForm.amount_paid),
+        repayment_duration: parseInt(vehicleForm.repayment_duration, 10),
         owner: user.id,
       }
 
@@ -236,7 +253,7 @@ export default function DashboardPage() {
         registration_number: '',
         photo: null,
         total_cost: '',
-        amount_paid: ''
+        repayment_duration: ''
       })
       setIsAddVehicleOpen(false)
 
@@ -249,13 +266,17 @@ export default function DashboardPage() {
         setTotalInvestment(total)
         const received = list.reduce((acc, v) => acc + parseFloat(v?.amount_paid ?? 0), 0)
         setAmountReceived(received)
-        const outstanding = list.reduce((acc, v) => {
-          const tc = parseFloat(v?.total_cost ?? 0)
-          const ap = parseFloat(v?.amount_paid ?? 0)
-          const bal = tc - ap
-          return acc + (bal > 0 ? bal : 0)
+        const receivable = list.reduce((acc, v) => acc + parseFloat(v?.total_receivable ?? 0), 0)
+        setTotalReceivable(receivable)
+        const durationToWeeks = { 12: 52, 18: 78, 24: 104 }
+        const weekly = list.reduce((acc, v) => {
+          const tr = parseFloat(v?.total_receivable ?? 0)
+          const d = typeof v?.repayment_duration === 'string' ? parseInt(v?.repayment_duration, 10) : v?.repayment_duration
+          const weeks = durationToWeeks[d] || 0
+          if (!tr || !weeks) return acc
+          return acc + (tr / weeks)
         }, 0)
-        setOutstandingReceivable(outstanding)
+        setWeeklyReturns(weekly)
       } catch (e) {
         console.error('Failed to refresh vehicle count:', e)
       }
@@ -373,23 +394,23 @@ export default function DashboardPage() {
 
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Outstanding Receivable</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-400">Total Receivable</CardTitle>
               <DollarSign className="h-4 w-4 text-yellow-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">{formatNGN(outstandingReceivable)}</div>
-              <p className="text-xs text-gray-500">Remaining balance to collect</p>
+              <div className="text-2xl font-bold text-white">{formatNGN(totalReceivable)}</div>
+              <p className="text-xs text-gray-500">Vehicle cost + interest (all vehicles)</p>
             </CardContent>
           </Card>
           
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Monthly Returns</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-400">Weekly Returns</CardTitle>
               <TrendingUp className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">₦0</div>
-              <p className="text-xs text-gray-500">No returns yet</p>
+              <div className="text-2xl font-bold text-white">{formatNGN(weeklyReturns)}</div>
+              <p className="text-xs text-gray-500">Sum of receivable ÷ weeks (12→52, 18→78, 24→104)</p>
             </CardContent>
           </Card>
         </div>
@@ -483,20 +504,38 @@ export default function DashboardPage() {
                         <p className="text-red-400 text-sm mt-1">{formErrors.total_cost}</p>
                       )}
                     </div>
-                    
+
                     <div>
-                      <Label htmlFor="amount_paid" className="text-white">Amount paid (₦)</Label>
+                      <Label htmlFor="repayment_duration" className="text-white">Repayment Duration</Label>
+                      <Select 
+                        value={vehicleForm.repayment_duration} 
+                        onValueChange={(value) => handleVehicleFormChange('repayment_duration', value)}
+                      >
+                        <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                          <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-600">
+                          <SelectItem value="12">12 months (52 weeks) — 30% interest</SelectItem>
+                          <SelectItem value="18">18 months (78 weeks) — 45% interest</SelectItem>
+                          <SelectItem value="24">24 months (104 weeks) — 50% interest</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {formErrors.repayment_duration && (
+                        <p className="text-red-400 text-sm mt-1">{formErrors.repayment_duration}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label className="text-white">Total Amount Receivable (₦)</Label>
                       <Input
-                        id="amount_paid"
-                        type="number"
-                        value={vehicleForm.amount_paid}
-                        onChange={(e) => handleVehicleFormChange('amount_paid', e.target.value)}
-                        placeholder="e.g., 1000000"
+                        value={computeReceivable() ? Number(computeReceivable()).toLocaleString() : ''}
+                        disabled
+                        placeholder="Displays after selecting duration"
                         className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
                       />
-                      {formErrors.amount_paid && (
-                        <p className="text-red-400 text-sm mt-1">{formErrors.amount_paid}</p>
-                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Amount of vehicle + interest based on duration
+                      </p>
                     </div>
                     
                     <div>

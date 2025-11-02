@@ -11,7 +11,7 @@ from .serializers import (
     LoginSerializer,
     VehicleSerializer,
 )
-from .models import Vehicle
+from .models import Vehicle, KYC, Payment, DriverApplication
 
 User = get_user_model()
 
@@ -124,3 +124,54 @@ class VehicleDetailView(generics.RetrieveUpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def recent_activity(request):
+    """Return recent activity for a driver including KYC, applications, and payments."""
+    driver_id = request.query_params.get('driver')
+    if not driver_id:
+        return Response({'error': 'Missing driver id'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Build activity list
+    activities = []
+    try:
+        # KYC activity
+        kyc = KYC.objects.filter(user_id=driver_id).first()
+        if kyc:
+            activities.append({
+                'type': 'KYC',
+                'title': 'KYC Submitted',
+                'description': f'Status: {kyc.status.title()}',
+                'timestamp': kyc.submitted_at.isoformat() if kyc.submitted_at else None,
+            })
+
+        # Driver applications
+        apps = DriverApplication.objects.filter(applicant_id=driver_id).order_by('-application_date')[:5]
+        for app in apps:
+            activities.append({
+                'type': 'APPLICATION',
+                'title': 'Driver Application',
+                'description': f'{app.vehicle.registration_number} • Status: {app.status.title()}',
+                'timestamp': app.application_date.isoformat() if app.application_date else None,
+            })
+
+        # Payments
+        payments = Payment.objects.filter(driver_id=driver_id).order_by('-payment_date')[:5]
+        for p in payments:
+            activities.append({
+                'type': 'PAYMENT',
+                'title': 'Payment Made' if p.status == Payment.PaymentStatus.SUCCESSFUL else 'Payment Failed',
+                'description': f'₦{p.amount} • {p.vehicle.registration_number}',
+                'timestamp': p.payment_date.isoformat() if p.payment_date else None,
+            })
+
+        # Sort by timestamp desc and limit
+        activities = [a for a in activities if a.get('timestamp')]
+        activities.sort(key=lambda a: a['timestamp'], reverse=True)
+        activities = activities[:10]
+
+        return Response({'items': activities}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

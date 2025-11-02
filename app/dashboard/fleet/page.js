@@ -25,7 +25,7 @@ export default function FleetPage() {
     model_name: '',
     registration_number: '',
     total_cost: '',
-    amount_paid: '',
+    repayment_duration: '',
     photo: null,
   })
 
@@ -64,7 +64,7 @@ export default function FleetPage() {
       model_name: v.model_name || '',
       registration_number: v.registration_number || '',
       total_cost: String(v.total_cost || ''),
-      amount_paid: String(v.amount_paid || ''),
+      repayment_duration: '',
       photo: null,
     })
     setIsEditOpen(true)
@@ -79,6 +79,19 @@ export default function FleetPage() {
     setEditForm((prev) => ({ ...prev, photo: file }))
   }
 
+  // Repayment plans mapping and calculation for edit form
+  const repaymentPlans = {
+    '12': { months: 12, weeks: 52, rate: 0.30 },
+    '18': { months: 18, weeks: 78, rate: 0.45 },
+    '24': { months: 24, weeks: 104, rate: 0.50 },
+  }
+  const computeReceivableEdit = () => {
+    const cost = parseFloat(editForm.total_cost || 0)
+    const plan = repaymentPlans[editForm.repayment_duration]
+    if (!plan || !cost || cost <= 0) return 0
+    return cost * (1 + plan.rate)
+  }
+
   const handleSaveEdit = async () => {
     if (!editVehicle) return
     try {
@@ -87,7 +100,7 @@ export default function FleetPage() {
         model_name: editForm.model_name.trim(),
         registration_number: editForm.registration_number.trim(),
         total_cost: parseFloat(editForm.total_cost),
-        amount_paid: parseFloat(editForm.amount_paid),
+        repayment_duration: editForm.repayment_duration ? parseInt(editForm.repayment_duration, 10) : undefined,
       }
 
       // If photo updated, upload to Blob and include photo_url
@@ -231,8 +244,28 @@ export default function FleetPage() {
               </div>
 
               <div>
-                <Label htmlFor="amount_paid" className="text-white">Amount Paid (₦)</Label>
-                <Input id="amount_paid" type="number" value={editForm.amount_paid} onChange={(e) => handleEditChange('amount_paid', e.target.value)} className="bg-gray-800 border-gray-600 text-white" />
+                <Label htmlFor="repayment_duration" className="text-white">Repayment Duration</Label>
+                <Select value={editForm.repayment_duration} onValueChange={(v) => handleEditChange('repayment_duration', v)}>
+                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-600">
+                    <SelectItem value="12">12 months (52 weeks) — 30% interest</SelectItem>
+                    <SelectItem value="18">18 months (78 weeks) — 45% interest</SelectItem>
+                    <SelectItem value="24">24 months (104 weeks) — 50% interest</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-white">Total Amount Receivable (₦)</Label>
+                <Input
+                  value={computeReceivableEdit() ? Number(computeReceivableEdit()).toLocaleString() : ''}
+                  disabled
+                  placeholder="Displays after selecting duration"
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+                <p className="text-xs text-gray-500 mt-1">Amount of vehicle + interest based on duration</p>
               </div>
 
               <div>

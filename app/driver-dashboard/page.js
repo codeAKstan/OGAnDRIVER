@@ -24,6 +24,8 @@ export default function DriverDashboardPage() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [kycStatus, setKycStatus] = useState(null)
+  const [recentActivity, setRecentActivity] = useState([])
+  const [activityLoading, setActivityLoading] = useState(true)
 
   useEffect(() => {
     // Check if user is logged in and has the right role
@@ -40,6 +42,23 @@ export default function DriverDashboardPage() {
     setKycStatus(status)
     setLoading(false)
   }, [])
+
+  useEffect(() => {
+    const fetchActivity = async () => {
+      if (!user?.id) return
+      try {
+        setActivityLoading(true)
+        const items = await apiService.getRecentActivity(user.id)
+        setRecentActivity(Array.isArray(items) ? items : [])
+      } catch (e) {
+        console.error('Failed to fetch recent activity:', e)
+        setRecentActivity([])
+      } finally {
+        setActivityLoading(false)
+      }
+    }
+    fetchActivity()
+  }, [user])
 
   const handleLogout = async () => {
     try {
@@ -161,23 +180,23 @@ export default function DriverDashboardPage() {
           
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Today's Earnings</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-400">Total Repayment</CardTitle>
               <DollarSign className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">₦0</div>
-              <p className="text-xs text-gray-500">No trips yet</p>
+              <p className="text-xs text-gray-500">Hire purchase total</p>
             </CardContent>
           </Card>
           
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Hours Driven</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-400">Amount Repaid</CardTitle>
               <Clock className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">0h</div>
-              <p className="text-xs text-gray-500">This week</p>
+              <div className="text-2xl font-bold text-white">₦0</div>
+              <p className="text-xs text-gray-500">Cumulative paid to date</p>
             </CardContent>
           </Card>
           
@@ -230,7 +249,7 @@ export default function DriverDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Recent Activity */}
+          {/* Recent Activity (real data) */}
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Recent Activity</CardTitle>
@@ -239,25 +258,37 @@ export default function DriverDashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3 p-3 bg-green-900/20 rounded-lg border border-green-500/30">
-                  <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-medium">KYC Submitted</p>
-                    <p className="text-sm text-gray-400">Your verification documents have been submitted successfully</p>
-                    <p className="text-xs text-gray-500 mt-1">Just now</p>
-                  </div>
+              {activityLoading ? (
+                <p className="text-sm text-gray-500">Loading activity...</p>
+              ) : recentActivity.length === 0 ? (
+                <p className="text-sm text-gray-500">No recent updates yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {recentActivity.map((item, idx) => (
+                    <div key={idx} className="flex items-start space-x-3 p-3 rounded-lg border bg-gray-800">
+                      {item.type === 'KYC' && (
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      )}
+                      {item.type === 'PAYMENT' && (
+                        <DollarSign className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      )}
+                      {item.type === 'APPLICATION' && (
+                        <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      )}
+                      {item.type !== 'KYC' && item.type !== 'PAYMENT' && item.type !== 'APPLICATION' && (
+                        <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <p className="text-white font-medium">{item.title}</p>
+                        <p className="text-sm text-gray-400">{item.description}</p>
+                        {item.timestamp && (
+                          <p className="text-xs text-gray-500 mt-1">{new Date(item.timestamp).toLocaleString()}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                
-                <div className="flex items-start space-x-3 p-3 bg-blue-900/20 rounded-lg border border-blue-500/30">
-                  <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-medium">Account Created</p>
-                    <p className="text-sm text-gray-400">Welcome to Oga Driver platform!</p>
-                    <p className="text-xs text-gray-500 mt-1">Earlier today</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>

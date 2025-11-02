@@ -9,4 +9,5 @@ urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     path('vehicles/', views.VehicleCreateView.as_view(), name='vehicle_create'),
     path('vehicles/<uuid:pk>/', views.VehicleDetailView.as_view(), name='vehicle_detail'),
+    path('recent-activity/', views.recent_activity, name='recent_activity'),
 ]

@@ -33,6 +33,10 @@ class Vehicle(models.Model):
     # Financials
     total_cost = models.DecimalField(max_digits=10, decimal_places=2)
     amount_paid = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    # Hire-purchase terms
+    repayment_duration = models.IntegerField(choices=[(12, '12'), (18, '18'), (24, '24')], null=True, blank=True)
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    total_receivable = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
 
     # Status
     is_active = models.BooleanField(default=True)
