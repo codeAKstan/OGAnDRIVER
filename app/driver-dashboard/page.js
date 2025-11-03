@@ -92,12 +92,14 @@ export default function DriverDashboardPage() {
       await apiService.logoutUser()
       localStorage.removeItem('user')
       localStorage.removeItem('userRole')
+      localStorage.removeItem('kycStatus')
       router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)
       // Force logout even if API call fails
       localStorage.removeItem('user')
       localStorage.removeItem('userRole')
+      localStorage.removeItem('kycStatus')
       router.push('/login')
     }
   }

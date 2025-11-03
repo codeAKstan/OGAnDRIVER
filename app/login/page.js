@@ -53,18 +53,31 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(response.user))
       localStorage.setItem('userRole', response.role)
       
-      // Role-based redirect (includes ADMIN)
-      setTimeout(() => {
-        if (response.role === 'ADMIN') {
-          router.push('/admin')
-        } else if (response.role === 'OGA') {
-          router.push('/dashboard')
-        } else if (response.role === 'DRIVER') {
-          router.push('/kyc')
-        } else {
-          router.push('/dashboard') // fallback
+      // Role-based redirect with KYC-aware logic for drivers
+      if (response.role === 'ADMIN') {
+        setTimeout(() => router.push('/admin'), 1500)
+      } else if (response.role === 'OGA') {
+        setTimeout(() => router.push('/dashboard'), 1500)
+      } else if (response.role === 'DRIVER') {
+        let destination = '/driver-dashboard'
+        try {
+          const kycRes = await apiService.getKYCStatus(response.user.id)
+          const status = (kycRes?.status || '').toUpperCase()
+          if (status) {
+            localStorage.setItem('kycStatus', status)
+          }
+          // If not approved or submitted, take user to KYC
+          if (!status || (status !== 'APPROVED' && status !== 'SUBMITTED')) {
+            destination = '/kyc'
+          }
+        } catch (e) {
+          // On error, default to dashboard; KYC sync will happen in dashboard
+          console.warn('Failed to fetch KYC status during login:', e)
         }
-      }, 1500)
+        setTimeout(() => router.push(destination), 1500)
+      } else {
+        setTimeout(() => router.push('/dashboard'), 1500) // fallback
+      }
       
     } catch (error) {
       console.error('Login error:', error)
