@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import apiService from "@/lib/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function AvailableVehiclesPage() {
   const router = useRouter()
@@ -13,6 +14,10 @@ export default function AvailableVehiclesPage() {
   const [loading, setLoading] = useState(true)
   const [vehicles, setVehicles] = useState([])
   const [fetching, setFetching] = useState(true)
+  const [kycStatus, setKycStatus] = useState(null)
+  const [showKycModal, setShowKycModal] = useState(false)
+  const [selectedVehicle, setSelectedVehicle] = useState(null)
+  const [kycModalMessage, setKycModalMessage] = useState("")
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -22,6 +27,8 @@ export default function AvailableVehiclesPage() {
       return
     }
     setUser(JSON.parse(userData))
+    const status = localStorage.getItem('kycStatus') || null
+    setKycStatus(status)
     setLoading(false)
   }, [router])
 
@@ -57,6 +64,19 @@ export default function AvailableVehiclesPage() {
   const formatNaira = (n) => {
     if (typeof n !== 'number') return '₦0'
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n)
+  }
+
+  const handleApplyClick = (vehicle) => {
+    setSelectedVehicle(vehicle)
+    const status = (kycStatus || '').toUpperCase()
+    const isApproved = status === 'APPROVED'
+    if (!isApproved) {
+      setKycModalMessage(status === 'SUBMITTED' ? 'Your KYC is awaiting approval' : 'You must complete your KYC before applying for a vehicle.')
+      setShowKycModal(true)
+      return
+    }
+    // Placeholder: actual application submission will be implemented separately
+    alert('Application submitted (coming soon). We will notify you!')
   }
 
 
@@ -124,8 +144,8 @@ export default function AvailableVehiclesPage() {
                     <span className="text-sm text-white">{formatNaira(Number(v?.weekly_returns || 0))}</span>
                   </div>
                   <div className="pt-4 flex items-center justify-end">
-                    <Button className="bg-orange-500 hover:bg-orange-600 text-black" disabled>
-                      Apply (coming soon)
+                    <Button className="bg-orange-500 hover:bg-orange-600 text-black" onClick={() => handleApplyClick(v)}>
+                      Apply
                     </Button>
                   </div>
                 </CardContent>
@@ -134,6 +154,33 @@ export default function AvailableVehiclesPage() {
           </div>
         )}
       </main>
+
+      {/* KYC Required Modal */}
+      <Dialog open={showKycModal} onOpenChange={setShowKycModal}>
+        <DialogContent className="bg-gray-900 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">{(kycStatus || '').toUpperCase() === 'SUBMITTED' ? 'KYC Awaiting Approval' : 'Complete KYC First'}</DialogTitle>
+            <DialogDescription className="text-gray-300">{kycModalMessage}</DialogDescription>
+          </DialogHeader>
+          <div className="text-sm text-gray-400">
+            {selectedVehicle ? (
+              <p>
+                Selected: {(selectedVehicle?.make || selectedVehicle?.manufacturer || 'Vehicle')} {selectedVehicle?.model || selectedVehicle?.model_name || ''}
+              </p>
+            ) : null}
+          </div>
+          <DialogFooter className="sm:justify-end">
+            <Button variant="ghost" className="text-gray-300" onClick={() => setShowKycModal(false)}>
+              Cancel
+            </Button>
+            {(kycStatus || '').toUpperCase() !== 'SUBMITTED' ? (
+              <Button className="bg-orange-500 hover:bg-orange-600 text-black" onClick={() => router.push('/kyc')}>
+                Go to KYC
+              </Button>
+            ) : null}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

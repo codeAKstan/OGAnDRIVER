@@ -53,9 +53,11 @@ export default function LoginPage() {
       localStorage.setItem('user', JSON.stringify(response.user))
       localStorage.setItem('userRole', response.role)
       
-      // Role-based redirect
+      // Role-based redirect (includes ADMIN)
       setTimeout(() => {
-        if (response.role === 'OGA') {
+        if (response.role === 'ADMIN') {
+          router.push('/admin')
+        } else if (response.role === 'OGA') {
           router.push('/dashboard')
         } else if (response.role === 'DRIVER') {
           router.push('/kyc')
