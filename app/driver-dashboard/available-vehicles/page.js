@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -7,17 +7,25 @@ import apiService from "@/lib/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AvailableVehiclesPage() {
   const router = useRouter()
-  const [user, setUser] = useState(null)
+  const { toast } = useToast()
+  const userRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const [vehicles, setVehicles] = useState([])
   const [fetching, setFetching] = useState(true)
   const [kycStatus, setKycStatus] = useState(null)
   const [showKycModal, setShowKycModal] = useState(false)
   const [selectedVehicle, setSelectedVehicle] = useState(null)
-  const [kycModalMessage, setKycModalMessage] = useState("")
+  const [showApplyModal, setShowApplyModal] = useState(false)
+  const [agreeTerms, setAgreeTerms] = useState(false)
+  const [note, setNote] = useState("")
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -26,29 +34,24 @@ export default function AvailableVehiclesPage() {
       router.push('/login')
       return
     }
-    setUser(JSON.parse(userData))
-    const status = localStorage.getItem('kycStatus') || null
-    setKycStatus(status)
-    setLoading(false)
-  }, [router])
-
-  // Sync KYC status from backend
-  useEffect(() => {
-    const syncKyc = async () => {
-      if (!user?.id) return
+    const driverUser = JSON.parse(userData)
+    userRef.current = driverUser
+    const syncStatus = async () => {
       try {
-        const res = await apiService.getKYCStatus(user.id)
-        const current = (res?.status || '').toUpperCase()
-        if (current) {
-          setKycStatus(current)
-          localStorage.setItem('kycStatus', current)
-        }
+        const res = await apiService.getKYCStatus(driverUser.id)
+        const status = (res?.status || localStorage.getItem('kycStatus') || '').toUpperCase()
+        setKycStatus(status || null)
+        if (status) localStorage.setItem('kycStatus', status)
       } catch (e) {
-        console.error('Failed to sync KYC status:', e)
+        console.error('Failed to fetch KYC status:', e)
+        const status = localStorage.getItem('kycStatus') || null
+        setKycStatus(status)
+      } finally {
+        setLoading(false)
       }
     }
-    syncKyc()
-  }, [user])
+    syncStatus()
+  }, [router])
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -87,14 +90,35 @@ export default function AvailableVehiclesPage() {
   const handleApplyClick = (vehicle) => {
     setSelectedVehicle(vehicle)
     const status = (kycStatus || '').toUpperCase()
-    const isApproved = status === 'APPROVED'
-    if (!isApproved) {
-      setKycModalMessage(status === 'SUBMITTED' ? 'Your KYC is awaiting approval' : 'You must complete your KYC before applying for a vehicle.')
+    const isKycApproved = status === 'APPROVED'
+    if (!isKycApproved) {
       setShowKycModal(true)
       return
     }
-    // Placeholder: actual application submission will be implemented separately
-    alert('Application submitted (coming soon). We will notify you!')
+    setAgreeTerms(false)
+    setNote("")
+    setShowApplyModal(true)
+  }
+
+  const submitApplication = async (e) => {
+    e?.preventDefault()
+    if (!userRef.current || !selectedVehicle) return
+    if (!agreeTerms) {
+      toast({ title: "Agree to Terms", description: "Please accept the hire-purchase terms before applying." })
+      return
+    }
+    try {
+      setSubmitting(true)
+      const res = await apiService.submitApplication({ applicant: userRef.current.id, vehicle: selectedVehicle.id })
+      const appId = res?.application?.id
+      toast({ title: "Application Submitted", description: "Your loan application is now pending." })
+      setShowApplyModal(false)
+      if (appId) router.push(`/driver-dashboard/loan/${appId}`)
+    } catch (err) {
+      toast({ title: "Submission Failed", description: (err?.message || 'Unable to submit application') })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
 
@@ -177,8 +201,10 @@ export default function AvailableVehiclesPage() {
       <Dialog open={showKycModal} onOpenChange={setShowKycModal}>
         <DialogContent className="bg-gray-900 border-gray-700 text-white">
           <DialogHeader>
-            <DialogTitle className="text-white">{(kycStatus || '').toUpperCase() === 'SUBMITTED' ? 'KYC Awaiting Approval' : 'Complete KYC First'}</DialogTitle>
-            <DialogDescription className="text-gray-300">{kycModalMessage}</DialogDescription>
+            <DialogTitle className="text-white">Complete KYC First</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              You must complete your KYC before applying for a vehicle.
+            </DialogDescription>
           </DialogHeader>
           <div className="text-sm text-gray-400">
             {selectedVehicle ? (
@@ -191,12 +217,96 @@ export default function AvailableVehiclesPage() {
             <Button variant="ghost" className="text-gray-300" onClick={() => setShowKycModal(false)}>
               Cancel
             </Button>
-            {(kycStatus || '').toUpperCase() !== 'SUBMITTED' ? (
-              <Button className="bg-orange-500 hover:bg-orange-600 text-black" onClick={() => router.push('/kyc')}>
-                Go to KYC
-              </Button>
-            ) : null}
+            <Button className="bg-orange-500 hover:bg-orange-600 text-black" onClick={() => router.push('/kyc')}>
+              Go to KYC
+            </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Apply Modal with scrollable content */}
+      <Dialog open={showApplyModal} onOpenChange={setShowApplyModal}>
+        <DialogContent className="bg-gray-900 border-gray-700 text-white max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Apply for Vehicle</DialogTitle>
+            <DialogDescription className="text-gray-300">
+              Review vehicle details and complete the form to submit your application.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedVehicle && (
+            <div className="space-y-6">
+              <div className="relative h-40 w-full bg-gray-800 rounded-md overflow-hidden">
+                <Image
+                  src={selectedVehicle?.photo_url || '/placeholder.jpg'}
+                  alt={`${selectedVehicle?.model_name || 'Vehicle'} photo`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">Make & Model</p>
+                  <p className="text-sm text-white font-medium">
+                    {(selectedVehicle?.make || selectedVehicle?.manufacturer || 'Vehicle')} {selectedVehicle?.model || selectedVehicle?.model_name || ''}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">Registration</p>
+                  <p className="text-sm text-white font-medium">{selectedVehicle?.registration_number || '-'}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">Total Receivable</p>
+                  <p className="text-sm text-white font-medium">{formatNaira(Number(selectedVehicle?.total_receivable || 0))}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">Weekly Returns</p>
+                  <p className="text-sm text-white font-medium">{formatNaira(Number(selectedVehicle?.weekly_returns || 0))}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">Duration</p>
+                  <p className="text-sm text-white font-medium">
+                    {(() => {
+                      const d = Number(selectedVehicle?.repayment_duration || 0)
+                      const map = { 12: 52, 18: 78, 24: 104 }
+                      const weeks = map[d] ?? (d ? Math.max(1, Math.round(d * 4.33)) : 0)
+                      return d ? `${d} months${weeks ? ` (${weeks} weeks)` : ''}` : '-'
+                    })()}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-400">Number of Payments</p>
+                  <p className="text-sm text-white font-medium">
+                    {(() => {
+                      const d = Number(selectedVehicle?.repayment_duration || 0)
+                      const map = { 12: 52, 18: 78, 24: 104 }
+                      const weeks = map[d] ?? (d ? Math.max(1, Math.round(d * 4.33)) : 0)
+                      return weeks ? `${weeks} weekly payments` : '-'
+                    })()}
+                  </p>
+                </div>
+              </div>
+
+              <form onSubmit={submitApplication} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="note" className="text-white">Optional Note</Label>
+                  <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything we should know?" className="bg-gray-800 border-gray-700 text-white" />
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Checkbox id="agree" checked={agreeTerms} onCheckedChange={(v) => setAgreeTerms(Boolean(v))} />
+                  <Label htmlFor="agree" className="text-gray-300 text-sm">I agree to the hire-purchase terms and repayment schedule.</Label>
+                </div>
+                <DialogFooter className="sm:justify-end">
+                  <Button type="button" variant="ghost" className="text-gray-300" onClick={() => setShowApplyModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={submitting} className="bg-orange-500 hover:bg-orange-600 text-black">
+                    {submitting ? 'Submitting...' : 'Submit Application'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

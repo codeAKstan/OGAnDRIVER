@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Vehicle, KYC
+from .models import Vehicle, KYC, DriverApplication
 from decimal import Decimal
 
 User = get_user_model()
@@ -199,3 +199,17 @@ class KYCSerializer(serializers.ModelSerializer):
             'submitted_at', 'verified_at', 'updated_at'
         )
         read_only_fields = ('id', 'verified_by', 'submitted_at', 'verified_at', 'updated_at')
+
+
+class DriverApplicationSerializer(serializers.ModelSerializer):
+    applicant = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.Role.DRIVER))
+    vehicle = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all())
+    vehicle_details = VehicleSerializer(source='vehicle', read_only=True)
+
+    class Meta:
+        model = DriverApplication
+        fields = (
+            'id', 'applicant', 'vehicle', 'vehicle_details',
+            'status', 'risk_score', 'application_date', 'decision_date'
+        )
+        read_only_fields = ('id', 'status', 'risk_score', 'application_date', 'decision_date')

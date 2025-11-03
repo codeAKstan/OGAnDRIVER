@@ -11,6 +11,7 @@ from .serializers import (
     LoginSerializer,
     VehicleSerializer,
     KYCSerializer,
+    DriverApplicationSerializer,
 )
 from .models import Vehicle, KYC, Payment, DriverApplication
 
@@ -224,5 +225,63 @@ def kyc_status(request):
             'status': kyc.status,
             'kyc': KYCSerializer(kyc).data
         }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def submit_application(request):
+    """Create a driver application for a vehicle with PENDING status."""
+    try:
+        data = request.data
+        applicant_id = data.get('applicant')
+        vehicle_id = data.get('vehicle')
+        if not applicant_id or not vehicle_id:
+            return Response({'error': 'Missing applicant or vehicle id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Basic validations
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        try:
+            applicant = User.objects.get(id=applicant_id, role=User.Role.DRIVER)
+        except User.DoesNotExist:
+            return Response({'error': 'Invalid applicant'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            vehicle = Vehicle.objects.get(id=vehicle_id)
+        except Vehicle.DoesNotExist:
+            return Response({'error': 'Invalid vehicle'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Require approved KYC
+        kyc = KYC.objects.filter(user_id=applicant_id).first()
+        if not kyc or kyc.status != KYC.VerificationStatus.APPROVED:
+            return Response({'error': 'KYC must be approved before applying'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Prevent multiple active applications for the same vehicle by same driver
+        existing = DriverApplication.objects.filter(applicant_id=applicant_id, vehicle_id=vehicle_id, status=DriverApplication.ApplicationStatus.PENDING).first()
+        if existing:
+            return Response({'message': 'Application already pending', 'application': DriverApplicationSerializer(existing).data}, status=status.HTTP_200_OK)
+
+        application = DriverApplication.objects.create(
+            applicant=applicant,
+            vehicle=vehicle,
+            status=DriverApplication.ApplicationStatus.PENDING,
+        )
+        return Response({'message': 'Application submitted', 'application': DriverApplicationSerializer(application).data}, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def application_detail(request, pk):
+    """Fetch a single driver application by id."""
+    try:
+        try:
+            application = DriverApplication.objects.get(id=pk)
+        except DriverApplication.DoesNotExist:
+            return Response({'error': 'Application not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(DriverApplicationSerializer(application).data, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
