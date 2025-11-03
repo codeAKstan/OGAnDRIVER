@@ -21,6 +21,7 @@ import {
   Clock
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import apiService from "@/lib/api"
 
 export default function KYCPage() {
   const router = useRouter()
@@ -119,7 +120,12 @@ export default function KYCPage() {
       case 4:
         return formData.emergencyName && formData.emergencyPhone && formData.emergencyRelationship
       default:
-        return true
+        // Step 5: Additional Information must be provided before submit
+        return (
+          (formData.criminalRecord && String(formData.criminalRecord).length > 0) &&
+          (formData.previousEmployment && formData.previousEmployment.trim().length > 0) &&
+          (formData.medicalConditions && formData.medicalConditions.trim().length > 0)
+        )
     }
   }
 
@@ -143,8 +149,32 @@ export default function KYCPage() {
     setMessage({ type: "", text: "" })
     
     try {
-      // Simulate API call for KYC submission
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Map form data to backend KYC payload
+      const fullName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim()
+      const addressCombined = [formData.address, formData.city, formData.state]
+        .filter(Boolean)
+        .join(', ')
+
+      const docTypeMap = {
+        nin: 'NATIONAL_ID',
+        passport: 'PASSPORT',
+        voters_card: 'VOTERS_CARD',
+      }
+      const documentType = docTypeMap[formData.idType] || 'NATIONAL_ID'
+
+      const kycPayload = {
+        user: user?.id,
+        full_name: fullName || 'Unknown',
+        date_of_birth: formData.dateOfBirth,
+        address: addressCombined,
+        document_type: documentType,
+        document_number: formData.idNumber,
+        // Optionally store extra info in notes for reviewer
+        verification_notes: `License: ${formData.licenseNumber || '-'}; Expiry: ${formData.licenseExpiry || '-'}; Experience: ${formData.yearsOfExperience || '-'}; Emergency: ${formData.emergencyName || '-'} (${formData.emergencyRelationship || '-'}) ${formData.emergencyPhone || '-'}; Previous: ${formData.previousEmployment || '-'}; Medical: ${formData.medicalConditions || '-'}`,
+      }
+
+      // Submit KYC to backend (creates or updates and marks UNDER_REVIEW)
+      await apiService.submitKYC(kycPayload)
       
       setMessage({ 
         type: "success", 
@@ -462,10 +492,11 @@ export default function KYCPage() {
             <h3 className="text-lg font-semibold text-white mb-4">Additional Information</h3>
             
             <div>
-              <Label htmlFor="previousEmployment" className="text-white mb-2 block">Previous Employment (Optional)</Label>
+              <Label htmlFor="previousEmployment" className="text-white mb-2 block">Previous Employment *</Label>
               <Textarea
                 id="previousEmployment"
                 name="previousEmployment"
+                required
                 value={formData.previousEmployment}
                 onChange={handleInputChange}
                 className="bg-gray-900 border-gray-700 text-white focus:border-orange-500"
@@ -488,10 +519,11 @@ export default function KYCPage() {
             </div>
             
             <div>
-              <Label htmlFor="medicalConditions" className="text-white mb-2 block">Medical Conditions (Optional)</Label>
+              <Label htmlFor="medicalConditions" className="text-white mb-2 block">Medical Conditions *</Label>
               <Textarea
                 id="medicalConditions"
                 name="medicalConditions"
+                required
                 value={formData.medicalConditions}
                 onChange={handleInputChange}
                 className="bg-gray-900 border-gray-700 text-white focus:border-orange-500"

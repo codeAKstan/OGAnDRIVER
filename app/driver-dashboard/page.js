@@ -18,9 +18,11 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import apiService from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export default function DriverDashboardPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [kycStatus, setKycStatus] = useState(null)
@@ -58,6 +60,31 @@ export default function DriverDashboardPage() {
       }
     }
     fetchActivity()
+  }, [user])
+
+  // Sync KYC status from backend and notify on changes
+  useEffect(() => {
+    const syncKycStatus = async () => {
+      if (!user?.id) return
+      const prev = (localStorage.getItem('kycStatus') || '').toUpperCase()
+      try {
+        const res = await apiService.getKYCStatus(user.id)
+        const current = (res?.status || '').toUpperCase()
+        if (current) {
+          setKycStatus(current)
+          localStorage.setItem('kycStatus', current)
+        }
+        if (prev && current && prev !== current && current === 'APPROVED') {
+          toast({
+            title: 'KYC Approved',
+            description: 'You can now apply for vehicles.',
+          })
+        }
+      } catch (e) {
+        console.error('Failed to sync KYC status:', e)
+      }
+    }
+    syncKycStatus()
   }, [user])
 
   const handleLogout = async () => {
@@ -131,7 +158,19 @@ export default function DriverDashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* KYC Status Banner */}
-        {kycStatus === 'SUBMITTED' ? (
+        {kycStatus === 'APPROVED' ? (
+          <Card className="bg-[green] border-green-500/30 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <CheckCircle className="w-6 h-6 text-green-500 mr-3" />
+                KYC Approved
+              </CardTitle>
+              <CardDescription className="text-gray-300">
+                Your KYC has been approved. You can now apply for available vehicles.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ) : kycStatus === 'SUBMITTED' ? (
           <Card className="bg-[green] border-green-500/30 mb-8">
             <CardHeader>
               <CardTitle className="text-white flex items-center">

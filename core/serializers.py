@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Vehicle
+from .models import Vehicle, KYC
 from decimal import Decimal
 
 User = get_user_model()
@@ -185,3 +185,17 @@ class LoginSerializer(serializers.Serializer):
         if not value:
             raise serializers.ValidationError("Password is required.")
         return value
+
+
+class KYCSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.Role.DRIVER))
+
+    class Meta:
+        model = KYC
+        fields = (
+            'id', 'user', 'full_name', 'date_of_birth', 'address',
+            'document_type', 'document_number', 'document_front_image', 'document_back_image',
+            'status', 'verified_by', 'verification_notes',
+            'submitted_at', 'verified_at', 'updated_at'
+        )
+        read_only_fields = ('id', 'verified_by', 'submitted_at', 'verified_at', 'updated_at')

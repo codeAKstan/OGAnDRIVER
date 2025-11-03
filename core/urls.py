@@ -10,4 +10,6 @@ urlpatterns = [
     path('vehicles/', views.VehicleCreateView.as_view(), name='vehicle_create'),
     path('vehicles/<uuid:pk>/', views.VehicleDetailView.as_view(), name='vehicle_detail'),
     path('recent-activity/', views.recent_activity, name='recent_activity'),
+    path('kyc/submit/', views.submit_kyc, name='kyc_submit'),
+    path('kyc/status/', views.kyc_status, name='kyc_status'),
 ]

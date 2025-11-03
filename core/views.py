@@ -10,6 +10,7 @@ from .serializers import (
     AdminUserCreationSerializer,
     LoginSerializer,
     VehicleSerializer,
+    KYCSerializer,
 )
 from .models import Vehicle, KYC, Payment, DriverApplication
 
@@ -173,5 +174,55 @@ def recent_activity(request):
         activities = activities[:10]
 
         return Response({'items': activities}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def submit_kyc(request):
+    """Create or update KYC for a driver and mark as UNDER_REVIEW."""
+    try:
+        data = request.data
+        user_id = data.get('user')
+        if not user_id:
+            return Response({'error': 'Missing user id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Upsert KYC by user
+        kyc = KYC.objects.filter(user_id=user_id).first()
+
+        # Force status to UNDER_REVIEW on submission
+        payload = {**data, 'status': KYC.VerificationStatus.UNDER_REVIEW}
+        serializer = KYCSerializer(instance=kyc, data=payload, partial=kyc is not None)
+        if serializer.is_valid():
+            instance = serializer.save()
+            resp = {
+                'message': 'KYC submitted',
+                'kyc': KYCSerializer(instance).data
+            }
+            return Response(resp, status=status.HTTP_201_CREATED if kyc is None else status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def kyc_status(request):
+    """Return the current KYC status for a given user id."""
+    try:
+        user_id = request.query_params.get('user')
+        if not user_id:
+            return Response({'error': 'Missing user id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        kyc = KYC.objects.filter(user_id=user_id).first()
+        if not kyc:
+            return Response({'status': 'NOT_SUBMITTED'}, status=status.HTTP_200_OK)
+
+        return Response({
+            'status': kyc.status,
+            'kyc': KYCSerializer(kyc).data
+        }, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

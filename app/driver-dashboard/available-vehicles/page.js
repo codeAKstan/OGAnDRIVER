@@ -32,6 +32,24 @@ export default function AvailableVehiclesPage() {
     setLoading(false)
   }, [router])
 
+  // Sync KYC status from backend
+  useEffect(() => {
+    const syncKyc = async () => {
+      if (!user?.id) return
+      try {
+        const res = await apiService.getKYCStatus(user.id)
+        const current = (res?.status || '').toUpperCase()
+        if (current) {
+          setKycStatus(current)
+          localStorage.setItem('kycStatus', current)
+        }
+      } catch (e) {
+        console.error('Failed to sync KYC status:', e)
+      }
+    }
+    syncKyc()
+  }, [user])
+
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
