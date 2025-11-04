@@ -289,7 +289,7 @@ export default function AvailableVehiclesPage() {
 
               <form onSubmit={submitApplication} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="note" className="text-white">Optional Note</Label>
+                  <Label htmlFor="note" className="text-white">Reason for Loan</Label>
                   <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Anything we should know?" className="bg-gray-800 border-gray-700 text-white" />
                 </div>
                 <div className="flex items-center space-x-3">

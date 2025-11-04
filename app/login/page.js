@@ -66,8 +66,8 @@ export default function LoginPage() {
           if (status) {
             localStorage.setItem('kycStatus', status)
           }
-          // If not approved or submitted, take user to KYC
-          if (!status || (status !== 'APPROVED' && status !== 'SUBMITTED')) {
+          // If not approved or under review/submitted, take user to KYC
+          if (!status || (status !== 'APPROVED' && status !== 'UNDER_REVIEW' && status !== 'SUBMITTED')) {
             destination = '/kyc'
           }
         } catch (e) {

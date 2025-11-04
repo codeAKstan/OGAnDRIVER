@@ -195,6 +195,7 @@ class KYCSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'user', 'full_name', 'date_of_birth', 'address',
             'document_type', 'document_number', 'document_front_image', 'document_back_image',
+            'monthly_income', 'bank_statement_summary', 'bank_statement_file',
             'status', 'verified_by', 'verification_notes',
             'submitted_at', 'verified_at', 'updated_at'
         )

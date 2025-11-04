@@ -12,6 +12,7 @@ urlpatterns = [
     path('recent-activity/', views.recent_activity, name='recent_activity'),
     path('kyc/submit/', views.submit_kyc, name='kyc_submit'),
     path('kyc/status/', views.kyc_status, name='kyc_status'),
+    path('risk/score/', views.credit_risk_score, name='credit_risk_score'),
     path('applications/submit/', views.submit_application, name='submit_application'),
     path('applications/<uuid:pk>/', views.application_detail, name='application_detail'),
 ]

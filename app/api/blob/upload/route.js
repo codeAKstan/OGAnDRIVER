@@ -14,8 +14,13 @@ export async function POST(request) {
 
     const { searchParams } = new URL(request.url)
     const filename = searchParams.get('filename') || `upload-${Date.now()}`
+    const fileType = searchParams.get('type') || 'general'
 
-    const blob = await put(`vehicles/${Date.now()}-${filename}`, request.body, {
+    // Determine folder based on file type
+    const folder = fileType === 'bank-statement' ? 'bank-statements' : 
+                   fileType === 'kyc-document' ? 'kyc-documents' : 'vehicles'
+
+    const blob = await put(`${folder}/${Date.now()}-${filename}`, request.body, {
       access: 'public',
       token,
     })

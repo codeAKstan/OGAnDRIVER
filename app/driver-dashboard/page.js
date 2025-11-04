@@ -184,6 +184,18 @@ export default function DriverDashboardPage() {
               </CardDescription>
             </CardHeader>
           </Card>
+        ) : kycStatus === 'UNDER_REVIEW' ? (
+          <Card className="bg-blue-900/20 border-blue-500/30 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Clock className="w-6 h-6 text-blue-500 mr-3" />
+                KYC Under Review
+              </CardTitle>
+              <CardDescription className="text-gray-300">
+                Your KYC is currently under review. We’ll notify you once it’s approved.
+              </CardDescription>
+            </CardHeader>
+          </Card>
         ) : (
           <Card className="bg-orange-900/20 border-orange-500/30 mb-8">
             <CardHeader>

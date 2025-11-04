@@ -18,7 +18,8 @@ import {
   AlertCircle,
   ArrowRight,
   Shield,
-  Clock
+  Clock,
+  DollarSign
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import apiService from "@/lib/api"
@@ -61,8 +62,15 @@ export default function KYCPage() {
     // Additional Information
     previousEmployment: "",
     criminalRecord: "no",
-    medicalConditions: ""
+    medicalConditions: "",
+    
+    // Financial Information
+    monthlyIncome: "",
+    bankStatementSummary: "",
+    bankStatementFile: null
   })
+  
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     // Check if user is logged in and has the right role
@@ -100,6 +108,49 @@ export default function KYCPage() {
     })
   }
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage({ type: "error", text: "File size must be less than 10MB" })
+      return
+    }
+
+    setIsUploading(true)
+    setMessage({ type: "", text: "" })
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('fileType', 'bank-statements')
+
+      const response = await fetch('/api/blob/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const result = await response.json()
+      
+      setFormData(prev => ({
+        ...prev,
+        bankStatementFile: result.url
+      }))
+
+      setMessage({ type: "success", text: "Bank statement uploaded successfully!" })
+    } catch (error) {
+      console.error('File upload error:', error)
+      setMessage({ type: "error", text: "Failed to upload file. Please try again." })
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const handleSkip = () => {
     try {
       localStorage.setItem('kycStatus', 'SKIPPED')
@@ -119,19 +170,24 @@ export default function KYCPage() {
         return formData.idType && formData.idNumber && formData.licenseNumber
       case 4:
         return formData.emergencyName && formData.emergencyPhone && formData.emergencyRelationship
-      default:
+      case 5:
         // Step 5: Additional Information must be provided before submit
         return (
           (formData.criminalRecord && String(formData.criminalRecord).length > 0) &&
           (formData.previousEmployment && formData.previousEmployment.trim().length > 0) &&
           (formData.medicalConditions && formData.medicalConditions.trim().length > 0)
         )
+      case 6:
+        // Step 6: Financial Information - monthly income is required
+        return formData.monthlyIncome && formData.monthlyIncome.trim().length > 0
+      default:
+        return false
     }
   }
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 5))
+      setCurrentStep(prev => Math.min(prev + 1, 6))
       setMessage({ type: "", text: "" })
     } else {
       setMessage({ type: "error", text: "Please fill in all required fields" })
@@ -162,16 +218,20 @@ export default function KYCPage() {
       }
       const documentType = docTypeMap[formData.idType] || 'NATIONAL_ID'
 
-      const kycPayload = {
-        user: user?.id,
-        full_name: fullName || 'Unknown',
-        date_of_birth: formData.dateOfBirth,
-        address: addressCombined,
-        document_type: documentType,
-        document_number: formData.idNumber,
-        // Optionally store extra info in notes for reviewer
-        verification_notes: `License: ${formData.licenseNumber || '-'}; Expiry: ${formData.licenseExpiry || '-'}; Experience: ${formData.yearsOfExperience || '-'}; Emergency: ${formData.emergencyName || '-'} (${formData.emergencyRelationship || '-'}) ${formData.emergencyPhone || '-'}; Previous: ${formData.previousEmployment || '-'}; Medical: ${formData.medicalConditions || '-'}`,
-      }
+       const kycPayload = {
+         user: user?.id,
+         full_name: fullName || 'Unknown',
+         date_of_birth: formData.dateOfBirth,
+         address: addressCombined,
+         document_type: documentType,
+         document_number: formData.idNumber,
+         // Send as string to satisfy DRF DecimalField parsing
+         monthly_income: formData.monthlyIncome ? Number(formData.monthlyIncome).toFixed(2) : null,
+         bank_statement_summary: formData.bankStatementSummary || '',
+         bank_statement_file: formData.bankStatementFile || '',
+         // Optionally store extra info in notes for reviewer
+         verification_notes: `License: ${formData.licenseNumber || '-'}; Expiry: ${formData.licenseExpiry || '-'}; Experience: ${formData.yearsOfExperience || '-'}; Emergency: ${formData.emergencyName || '-'} (${formData.emergencyRelationship || '-'}) ${formData.emergencyPhone || '-'}; Previous: ${formData.previousEmployment || '-'}; Medical: ${formData.medicalConditions || '-'}`,
+       }
 
       // Submit KYC to backend (creates or updates and marks UNDER_REVIEW)
       await apiService.submitKYC(kycPayload)
@@ -194,7 +254,8 @@ export default function KYCPage() {
       
     } catch (error) {
       console.error('KYC submission error:', error)
-      setMessage({ type: "error", text: "Failed to submit KYC information. Please try again." })
+      const errText = (error && error.message) ? `Failed to submit KYC: ${error.message}` : "Failed to submit KYC information. Please try again."
+      setMessage({ type: "error", text: errText })
     } finally {
       setIsSubmitting(false)
     }
@@ -534,6 +595,63 @@ export default function KYCPage() {
           </div>
         )
       
+      case 6:
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <DollarSign className="w-5 h-5 mr-2 text-orange-500" />
+              Financial Information
+            </h3>
+            
+            <div>
+              <Label htmlFor="monthlyIncome" className="text-white mb-2 block">Monthly Income (₦) *</Label>
+              <Input
+                id="monthlyIncome"
+                name="monthlyIncome"
+                type="number"
+                min="0"
+                step="1000"
+                required
+                value={formData.monthlyIncome}
+                onChange={handleInputChange}
+                className="bg-gray-900 border-gray-700 text-white focus:border-orange-500"
+                placeholder="Enter your monthly income in Naira"
+              />
+            </div>
+            
+            
+            
+            <div>
+              <Label htmlFor="bankStatementFile" className="text-white mb-2 block">Bank Statement Upload</Label>
+              <div className="space-y-2">
+                <Input
+                  id="bankStatementFile"
+                  name="bankStatementFile"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={handleFileUpload}
+                  className="bg-gray-900 border-gray-700 text-white focus:border-orange-500 file:bg-orange-500 file:text-black file:border-0 file:rounded file:px-3 file:py-1 file:mr-3"
+                />
+                <p className="text-sm text-gray-400">
+                  Upload your bank statement (PDF, JPG, PNG - Max 10MB)
+                </p>
+                {isUploading && (
+                  <div className="flex items-center space-x-2 text-orange-500">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                    <span className="text-sm">Uploading...</span>
+                  </div>
+                )}
+                {formData.bankStatementFile && (
+                  <div className="flex items-center space-x-2 text-green-400">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm">File uploaded successfully</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      
       default:
         return null
     }
@@ -586,13 +704,13 @@ export default function KYCPage() {
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-400">Step {currentStep} of 5</span>
-              <span className="text-sm text-gray-400">{Math.round((currentStep / 5) * 100)}% Complete</span>
+              <span className="text-sm text-gray-400">Step {currentStep} of 6</span>
+              <span className="text-sm text-gray-400">{Math.round((currentStep / 6) * 100)}% Complete</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <div 
                 className="bg-orange-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(currentStep / 5) * 100}%` }}
+                style={{ width: `${(currentStep / 6) * 100}%` }}
               ></div>
             </div>
           </div>
@@ -625,7 +743,7 @@ export default function KYCPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={currentStep === 5 ? handleSubmit : (e) => e.preventDefault()}>
+              <form onSubmit={currentStep === 6 ? handleSubmit : (e) => e.preventDefault()}>
                 {renderStep()}
                 
                 {/* Navigation Buttons */}
@@ -640,7 +758,7 @@ export default function KYCPage() {
                     Previous
                   </Button>
                   
-                  {currentStep < 5 ? (
+                  {currentStep < 6 ? (
                     <Button
                       type="button"
                       onClick={nextStep}

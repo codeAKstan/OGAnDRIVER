@@ -144,3 +144,39 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'core.User'
+
+# --- Risk Scoring Configuration ---
+# Toggle to use linear regression-style risk scoring.
+USE_LINEAR_RISK = False
+
+# Toggle to use logistic regression-style risk scoring.
+USE_LOGISTIC_RISK = True
+
+# Default coefficients for linear risk model. Override per environment if needed.
+RISK_LINEAR_CONFIG = {
+    'intercept': 600.0,
+    'coeffs': {
+        'kyc_approved': 120.0,
+        'age_years': 1.5,
+        'weekly_returns_10k': -60.0,
+        'interest_rate': -40.0,              # interest as fraction (e.g., 0.30)
+        'repayment_duration_months': -1.0,
+        'down_payment_ratio': 80.0,          # 0.2 -> +16
+        'success_ratio': 200.0,              # 1.0 -> +200
+        'failed_recent_6m': -25.0,
+    }
+}
+
+# Default coefficients for logistic risk model.
+RISK_LOGISTIC_CONFIG = {
+    'intercept': -1.0,
+    'coeffs': {
+        'kyc_approved': 1.2,
+        'kyc_under_review': 0.3,
+        'age_years': 0.02,
+        'monthly_income_100k': 0.8,
+        'success_ratio': 1.5,
+        'failed_recent_6m': -0.25,
+        'weekly_returns_10k': -0.4,
+    }
+}

@@ -129,6 +129,11 @@ class KYC(models.Model):
     document_front_image = models.URLField(max_length=500, blank=True, null=True)
     document_back_image = models.URLField(max_length=500, blank=True, null=True)
     
+    # Financial Information
+    monthly_income = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    bank_statement_summary = models.TextField(blank=True, null=True, help_text="Summary of bank statement including average balance, transaction patterns, etc.")
+    bank_statement_file = models.URLField(max_length=500, blank=True, null=True, help_text="URL to uploaded bank statement file")
+    
     # Verification Status
     status = models.CharField(max_length=50, choices=VerificationStatus.choices, default=VerificationStatus.PENDING)
     verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='kyc_verifications', limit_choices_to={'role': User.Role.ADMIN})
