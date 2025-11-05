@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obumneme Anigbo Moses - Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #2c3e50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .contact {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        .contact-item {
+            color: #555;
+        }
+
+        .contact-item a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary {
+            text-align: justify;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .skill-item {
+            color: #555;
+        }
+
+        .skill-item strong {
+            color: #2c3e50;
+        }
+
+        .experience-item, .project-item, .education-item {
+            margin-bottom: 20px;
+        }
+
+        .experience-header, .project-header {
+            margin-bottom: 8px;
+        }
+
+        .job-title, .project-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .company, .tech-stack {
+            color: #555;
+            font-style: italic;
+        }
+
+        .date {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .experience-item ul, .project-description {
+            margin-left: 20px;
+            color: #555;
+        }
+
+        .experience-item li {
+            margin-bottom: 5px;
+        }
+
+        .project-link {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .project-link:hover {
+            text-decoration: underline;
+        }
+
+        .education-item {
+            color: #555;
+        }
+
+        .degree {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .download-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+
+        .download-btn:hover {
+            background-color: #2980b9;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .download-btn {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .contact {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .download-btn {
+                position: static;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="download-btn" onclick="window.print()">Download PDF</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>OBUMNEME ANIGBO MOSES</h1>
+            <!-- <div class="contact">
+                <span class="contact-item">📧 <a href="mailto:codeakstan@gmail.com">codeakstan@gmail.com</a></span>
+                <span class="contact-item">🌐 <a href="https://codeakstan.vercel.app" target="_blank">codeakstan.vercel.app</a></span>
+                <span class="contact-item">💻 <a href="https://github.com/codeAKstan" target="_blank">github.com/codeAKstan</a></span>
+                <span class="contact-item">💼 <a href="https://linkedin.com/in/codeAKstan" target="_blank">linkedin.com/in/codeAKstan</a></span>
+            </div> -->
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Summary</h2>
+            <p class="summary">
+                Passionate and results-driven  developer with expertise in building scalable web applications and problem-solving using modern frameworks and technologies. Proficient in Python, Flask, Django, PHP, MySQL, and PostgreSQL. Experienced in collaborating with cross-functional teams via GitHub, writing clean code, and delivering high-quality solutions. Graduated October 2024 from the ALX Software Engineering Program with a specialization in Backend Development.
+            </p>
+        </div>
+
+        <!-- <div class="section">
+            <h2 class="section-title">Key Achievements</h2>
+            <ul style="margin-left: 20px; color: #555;">
+                <li>Developed 4+ full-stack applications serving real users with scalable backend architectures</li>
+                <li>Successfully integrated PostgreSQL and MySQL databases with optimized query performance</li>
+                <li>Collaborated on projects using Git version control and GitHub for code management</li>
+                <li>Built RESTful APIs with Django REST Framework featuring authentication and access control</li>
+                <li>Implemented biometric authentication system using WebAuthn for blockchain applications</li>
+            </ul>
+        </div> -->
+
+        <div class="section">
+            <h2 class="section-title">Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-item"><strong>Languages:</strong> Python, PHP, JavaScript, HTML, CSS</div>
+                <div class="skill-item"><strong>Frameworks:</strong> Django, Flask, Django REST Framework</div>
+                <div class="skill-item"><strong>Databases:</strong> MySQL, PostgreSQL, Mongodb</div>
+                <div class="skill-item"><strong>Tools:</strong> Git, GitHub, VS Code, Docker</div>
+                <div class="skill-item"><strong>Soft Skills:</strong> Problem-solving, Communication, Team Collaboration</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Education</h2>
+            <div class="education-item">
+                <div class="degree">University of Nigeria, Nsukka</div>
+                <div>B.Sc. in Computer Science</div>
+            </div>
+            <div class="education-item" style="margin-top: 15px;">
+                <div class="degree">Certification</div>
+                <div>ALX Software Engineering Program (Backend Specialization) - Oct 2024</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Experience</h2>
+            <div class="experience-item">
+                <div class="experience-header">
+                    <div class="job-title">Full Stack Developer - Thynk Technology</div>
+                    <div class="date">2023 - Present</div>
+                </div>
+                <ul>
+                    <li>Developed and maintained 20+ web applications using modern frameworks and technologies</li>
+                    <li>Collaborated with cross-functional teams to deliver scalable solutions for diverse client requirements</li>
+                    <li>Implemented efficient database architectures and RESTful APIs for seamless frontend-backend integration</li>
+                </ul>
+            </div>
+            <div class="experience-item">
+                <div class="experience-header">
+                    <div class="job-title">Developer / Tutor - Nanocodes Programming Hub</div>
+                    <div class="date">2022 - Present</div>
+                </div>
+                <ul>
+                    <li>Mentored and trained aspiring developers in Python, PHP, JavaScript, and web development fundamentals</li>
+                    <li>Developed curriculum and hands-on projects to enhance student understanding of programming concepts</li>
+                    <li>Built educational web applications and tools to support learning objectives</li>
+                </ul>
+            </div>
+            <div class="experience-item">
+                <div class="experience-header">
+                    <div class="job-title">Full Stack Developer - ALX Program (Remote)</div>
+                    <div class="date">Graduated October 2024</div>
+                </div>
+                <ul>
+                    <li>Built 3+ full-stack projects using Flask and MySQL, implementing efficient database schemas and reducing query response time by 40%</li>
+                    <li>Learned and applied software design patterns, version control with Git/GitHub, and deployment strategies</li>
+                    <li>Collaborated with peers on team projects using GitHub for code reviews and agile methodologies</li>
+                </ul>
+            </div>
+            <div class="experience-item">
+                <div class="experience-header">
+                    <div class="job-title">Freelance Web Developer - Remote</div>
+                    <div class="date">2022 - Present</div>
+                </div>
+                <ul>
+                    <li>Built 20+ responsive web applications using PHP, JavaScript, and MySQL for diverse client needs</li>
+                    <li>Delivered tailored web solutions resulting in improved user experience and 95% client satisfaction rate</li>
+                    <li>Managed full project lifecycle from requirements gathering to deployment and maintenance</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Projects</h2>
+            <div class="project-item">
+                <div class="project-header">
+                    <div class="project-title">Swivly</div>
+                    <div class="tech-stack">Django, PostgreSQL, Next.js</div>
+                </div>
+                <div class="project-description">Student platform for accommodation and classifieds.</div>
+                <a href="https://github.com/codeAKstan/Swivly2" class="project-link" target="_blank">GitHub: github.com/codeAKstan/Swivly2</a>
+            </div>
+
+            <div class="project-item">
+                <div class="project-header">
+                    <div class="project-title">Volt Workspace</div>
+                    <div class="tech-stack">Django REST, PostgreSQL, Next.js</div>
+                </div>
+                <div class="project-description">Booking system with analytics dashboard and role-based access control.</div>
+                <a href="https://github.com/codeAKstan/Volt" class="project-link" target="_blank">GitHub: github.com/codeAKstan/Volt</a>
+            </div>
+
+            <div class="project-item">
+                <div class="project-header">
+                    <div class="project-title">Quiz-it</div>
+                    <div class="tech-stack">PHP, MySQL, JS</div>
+                </div>
+                <div class="project-description">Gamified quiz application with rewards system and real-time scoring.</div>
+                <a href="https://github.com/codeAKstan/quiz_it-project" class="project-link" target="_blank">GitHub: github.com/codeAKstan/quiz_it-project</a>
+            </div>
+
+            <div class="project-item">
+                <div class="project-header">
+                    <div class="project-title">DeFiPass</div>
+                    <div class="tech-stack">Next.js 14, Solana, TypeScript</div>
+                </div>
+                <div class="project-description">Biometric DeFi wallet using Passkey & WebAuthn.</div>
+                <a href="https://github.com/codeAKstan/defipass" class="project-link" target="_blank">GitHub: github.com/codeAKstan/defipass</a>
+            </div>
+        </div>
+
+        <div class="section" style="border-top: 2px solid #e0e0e0; padding-top: 20px; margin-top: 30px;">
+            <h2 class="section-title">Contact Information</h2>
+            <div style="color: #555; line-height: 2;">
+                <div><strong>Phone:</strong> +234 913 743 2913</div>
+                <div><strong>Email:</strong> <a href="mailto:codeakstan@gmail.com" style="color: #3498db; text-decoration: none;">codeakstan@gmail.com</a></div>
+                <div><strong>Portfolio:</strong> <a href="https://codeakstan.vercel.app" target="_blank" style="color: #3498db; text-decoration: none;">codeakstan.vercel.app</a></div>
+                <div><strong>GitHub:</strong> <a href="https://github.com/codeAKstan" target="_blank" style="color: #3498db; text-decoration: none;">github.com/codeAKstan</a></div>
+                <div><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/codeAKstan" target="_blank" style="color: #3498db; text-decoration: none;">linkedin.com/in/codeAKstan</a></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
