@@ -249,43 +249,18 @@ def credit_risk_score(request):
             except Vehicle.DoesNotExist:
                 return Response({'error': 'Invalid vehicle'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Prefer logistic scoring when available
-        from django.conf import settings as dj_settings
-        use_logistic = getattr(dj_settings, 'USE_LOGISTIC_RISK', False)
-        if use_logistic:
-            from .risk_model import compute_driver_credit_score_logistic
-            details = compute_driver_credit_score_logistic(applicant_id=user_id, vehicle=vehicle)
-            try:
-                logger.info(
-                    "[CREDIT_RISK_SCORE] logistic details user=%s vehicle=%s -> %s",
-                    user_id,
-                    getattr(vehicle, 'id', None),
-                    details,
-                )
-            except Exception:
-                pass
-        else:
-            # Fallback to linear/heuristic; linear requires vehicle for some features
-            use_linear = getattr(dj_settings, 'USE_LINEAR_RISK', False)
-            if use_linear and vehicle:
-                from .risk_model import compute_driver_credit_score_linear
-                score = compute_driver_credit_score_linear(applicant_id=user_id, vehicle=vehicle)
-            else:
-                # Heuristic default
-                score = compute_driver_credit_score(applicant_id=user_id, vehicle=vehicle or Vehicle.objects.first())
-            # Derive probability from score on a rough mapping
-            prob = max(0.0, min(1.0, (score - 300) / 550.0))
-            category = 'Excellent' if score >= 750 else ('Good' if score >= 650 else ('Fair' if score >= 550 else 'Poor'))
-            details = {'probability': prob, 'score': score, 'category': category}
-            try:
-                logger.info(
-                    "[CREDIT_RISK_SCORE] fallback details user=%s vehicle=%s -> %s",
-                    user_id,
-                    getattr(vehicle, 'id', None),
-                    details,
-                )
-            except Exception:
-                pass
+        # Always use logistic scoring
+        from .risk_model import compute_driver_credit_score_logistic
+        details = compute_driver_credit_score_logistic(applicant_id=user_id, vehicle=vehicle)
+        try:
+            logger.info(
+                "[CREDIT_RISK_SCORE] logistic details user=%s vehicle=%s -> %s",
+                user_id,
+                getattr(vehicle, 'id', None),
+                details,
+            )
+        except Exception:
+            pass
 
         return Response(details, status=status.HTTP_200_OK)
     except Exception as e:
@@ -379,72 +354,29 @@ def submit_application(request):
         # Prevent multiple active applications for the same vehicle by same driver
         existing = DriverApplication.objects.filter(applicant_id=applicant_id, vehicle_id=vehicle_id, status=DriverApplication.ApplicationStatus.PENDING).first()
         if existing:
-            # Backfill risk score if missing on older records
+            # Backfill risk score using logistic model if missing on older records
             if existing.risk_score is None:
-                from django.conf import settings as dj_settings
-                try:
-                    use_linear = getattr(dj_settings, 'USE_LINEAR_RISK', False)
-                except Exception:
-                    use_linear = False
-                if use_linear:
-                    from .risk_model import compute_driver_credit_score_linear
-                    existing.risk_score = compute_driver_credit_score_linear(applicant_id=applicant_id, vehicle=vehicle)
-                else:
-                    existing.risk_score = compute_driver_credit_score(applicant_id=applicant_id, vehicle=vehicle)
+                from .risk_model import compute_driver_credit_score_logistic
+                details = compute_driver_credit_score_logistic(applicant_id=applicant_id, vehicle=vehicle)
+                existing.risk_score = int(details.get('score') or 0)
                 existing.save(update_fields=['risk_score'])
             return Response({'message': 'Application already pending', 'application': DriverApplicationSerializer(existing).data}, status=status.HTTP_200_OK)
 
-        # Compute risk score and create application
-        from django.conf import settings as dj_settings
+        # Compute risk score and create application using logistic scoring only
+        from .risk_model import compute_driver_credit_score_logistic
+        risk_details = compute_driver_credit_score_logistic(applicant_id=applicant_id, vehicle=vehicle)
+        risk_score = int(risk_details.get('score') or 0)
         try:
-            use_linear = getattr(dj_settings, 'USE_LINEAR_RISK', False)
+            logger.info(
+                "[SUBMIT_APPLICATION] logistic user=%s vehicle=%s -> prob=%s score=%s category=%s",
+                applicant_id,
+                vehicle_id,
+                risk_details.get('probability'),
+                risk_details.get('score'),
+                risk_details.get('category'),
+            )
         except Exception:
-            use_linear = False
-        # Prefer logistic scoring if enabled, else fallback to linear or heuristic
-        try:
-            use_logistic = getattr(dj_settings, 'USE_LOGISTIC_RISK', False)
-        except Exception:
-            use_logistic = False
-
-        risk_details = None
-        if use_logistic:
-            from .risk_model import compute_driver_credit_score_logistic
-            risk_details = compute_driver_credit_score_logistic(applicant_id=applicant_id, vehicle=vehicle)
-            risk_score = int(risk_details.get('score') or 0)
-            try:
-                logger.info(
-                    "[SUBMIT_APPLICATION] logistic user=%s vehicle=%s -> prob=%s score=%s category=%s",
-                    applicant_id,
-                    vehicle_id,
-                    risk_details.get('probability'),
-                    risk_details.get('score'),
-                    risk_details.get('category'),
-                )
-            except Exception:
-                pass
-        elif use_linear:
-            from .risk_model import compute_driver_credit_score_linear
-            risk_score = compute_driver_credit_score_linear(applicant_id=applicant_id, vehicle=vehicle)
-            try:
-                logger.info(
-                    "[SUBMIT_APPLICATION] linear user=%s vehicle=%s -> score=%s",
-                    applicant_id,
-                    vehicle_id,
-                    risk_score,
-                )
-            except Exception:
-                pass
-        else:
-            risk_score = compute_driver_credit_score(applicant_id=applicant_id, vehicle=vehicle)
-            try:
-                logger.info(
-                    "[SUBMIT_APPLICATION] heuristic user=%s vehicle=%s -> score=%s",
-                    applicant_id,
-                    vehicle_id,
-                    risk_score,
-                )
-            except Exception:
-                pass
+            pass
         application = DriverApplication.objects.create(
             applicant=applicant,
             vehicle=vehicle,
