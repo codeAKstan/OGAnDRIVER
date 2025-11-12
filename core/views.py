@@ -499,3 +499,26 @@ def notifications_list(request):
         return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def notifications_mark_read(request):
+    """Mark notifications as read. Provide 'user' to mark all for a user, or 'id' to mark a single notification."""
+    try:
+        notif_id = (request.data or {}).get('id')
+        user_id = (request.data or {}).get('user') or request.query_params.get('user')
+        if notif_id:
+            try:
+                note = Notification.objects.get(id=notif_id)
+            except Notification.DoesNotExist:
+                return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)
+            note.is_read = True
+            note.save(update_fields=['is_read'])
+            return Response({'message': 'Marked as read', 'id': str(note.id)}, status=status.HTTP_200_OK)
+        if not user_id:
+            return Response({'error': 'Provide user or id'}, status=status.HTTP_400_BAD_REQUEST)
+        updated = Notification.objects.filter(user_id=user_id, is_read=False).update(is_read=True)
+        return Response({'message': 'Marked all as read', 'updated': updated}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

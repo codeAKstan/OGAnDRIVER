@@ -18,4 +18,5 @@ urlpatterns = [
     path('applications/<uuid:pk>/status/', views.update_application_status, name='update_application_status'),
     path('applications/owner/', views.owner_applications, name='owner_applications'),
     path('notifications/', views.notifications_list, name='notifications_list'),
+    path('notifications/mark-read/', views.notifications_mark_read, name='notifications_mark_read'),
 ]

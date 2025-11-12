@@ -27,6 +27,9 @@ export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [isNotifOpen, setIsNotifOpen] = useState(false)
   const [vehicleCount, setVehicleCount] = useState(0)
   const [totalInvestment, setTotalInvestment] = useState(0)
   const [amountReceived, setAmountReceived] = useState(0)
@@ -49,6 +52,39 @@ export default function DashboardPage() {
     '12': { months: 12, weeks: 52, rate: 0.30 },
     '18': { months: 18, weeks: 78, rate: 0.45 },
     '24': { months: 24, weeks: 104, rate: 0.50 },
+  }
+
+  // Notifications: fetch list and compute unread
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user?.id) return
+      try {
+        const res = await apiService.getNotifications(user.id)
+        const items = Array.isArray(res?.items) ? res.items : []
+        setNotifications(items)
+        setUnreadCount(items.filter(n => !n.is_read).length)
+      } catch (e) {
+        console.error('Failed to fetch notifications:', e)
+        setNotifications([])
+        setUnreadCount(0)
+      }
+    }
+    fetchNotifications()
+  }, [user])
+
+  const toggleNotifications = () => setIsNotifOpen(prev => !prev)
+  const markAllRead = async () => {
+    if (!user?.id) return
+    try {
+      await apiService.markNotificationsRead(user.id)
+      // Refresh list
+      const res = await apiService.getNotifications(user.id)
+      const items = Array.isArray(res?.items) ? res.items : []
+      setNotifications(items)
+      setUnreadCount(items.filter(n => !n.is_read).length)
+    } catch (e) {
+      console.error('Failed to mark notifications read:', e)
+    }
   }
 
   const computeReceivable = () => {
@@ -310,10 +346,19 @@ export default function DashboardPage() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                <Bell className="w-4 h-4" />
-              </Button>
+            <div className="flex items-center space-x-4 relative">
+              <button
+                className="relative text-gray-400 hover:text-white"
+                aria-label="Notifications"
+                onClick={toggleNotifications}
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
                 <Settings className="w-4 h-4" />
               </Button>
@@ -325,6 +370,40 @@ export default function DashboardPage() {
               >
                 <LogOut className="w-4 h-4" />
               </Button>
+
+              {isNotifOpen && (
+                <div className="absolute right-0 top-10 w-80 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700">
+                    <div className="text-sm text-white">Notifications</div>
+                    <button
+                      className="text-xs text-orange-400 hover:text-orange-300"
+                      onClick={markAllRead}
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="px-3 py-4 text-sm text-gray-400">No notifications</div>
+                    ) : notifications.map((n) => (
+                      <div key={n.id} className="px-3 py-3 border-b border-gray-800 hover:bg-gray-800">
+                        <div className="text-sm text-white">{n.title}</div>
+                        <div className="text-xs text-gray-400 mt-0.5">{n.message}</div>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded ${n.is_read ? 'bg-gray-700 text-gray-300' : 'bg-blue-700 text-white'}`}>
+                            {n.is_read ? 'READ' : 'NEW'}
+                          </span>
+                          {n.application?.id ? (
+                            <Link href={`/dashboard/review-drivers/${n.application.id}`} className="text-xs text-orange-400 hover:text-orange-300">
+                              View application
+                            </Link>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
