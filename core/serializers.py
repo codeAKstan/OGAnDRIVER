@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Vehicle, KYC, DriverApplication
+from .models import Vehicle, KYC, DriverApplication, Notification
 from decimal import Decimal
 
 User = get_user_model()
@@ -206,11 +206,25 @@ class DriverApplicationSerializer(serializers.ModelSerializer):
     applicant = serializers.PrimaryKeyRelatedField(queryset=User.objects.filter(role=User.Role.DRIVER))
     vehicle = serializers.PrimaryKeyRelatedField(queryset=Vehicle.objects.all())
     vehicle_details = VehicleSerializer(source='vehicle', read_only=True)
+    applicant_details = UserSerializer(source='applicant', read_only=True)
 
     class Meta:
         model = DriverApplication
         fields = (
-            'id', 'applicant', 'vehicle', 'vehicle_details',
+            'id', 'applicant', 'applicant_details', 'vehicle', 'vehicle_details',
             'status', 'risk_score', 'application_date', 'decision_date'
         )
         read_only_fields = ('id', 'status', 'risk_score', 'application_date', 'decision_date')
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    application = DriverApplicationSerializer(read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = (
+            'id', 'user', 'title', 'message', 'type', 'application',
+            'is_read', 'created_at'
+        )
+        read_only_fields = ('id', 'created_at')

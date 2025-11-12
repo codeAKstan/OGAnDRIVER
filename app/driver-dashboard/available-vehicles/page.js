@@ -111,7 +111,19 @@ export default function AvailableVehiclesPage() {
       setSubmitting(true)
       const res = await apiService.submitApplication({ applicant: userRef.current.id, vehicle: selectedVehicle.id })
       const appId = res?.application?.id
-      toast({ title: "Application Submitted", description: "Your loan application is now pending." })
+      const currentStatus = (res?.status || res?.application?.status || 'PENDING')
+      const msg = (res?.message || '').toLowerCase()
+      if (msg.includes('applied for this vehicle already')) {
+        toast({
+          title: "Already Applied",
+          description: `You have applied for this vehicle already. Status: ${currentStatus}`,
+        })
+      } else {
+        toast({
+          title: "Application Submitted",
+          description: `Your application status: ${currentStatus}`,
+        })
+      }
       setShowApplyModal(false)
       if (appId) router.push(`/driver-dashboard/loan/${appId}`)
     } catch (err) {

@@ -13,8 +13,9 @@ from .serializers import (
     VehicleSerializer,
     KYCSerializer,
     DriverApplicationSerializer,
+    NotificationSerializer,
 )
-from .models import Vehicle, KYC, Payment, DriverApplication
+from .models import Vehicle, KYC, Payment, DriverApplication, Notification
 from django.db import IntegrityError, DataError
 from decimal import InvalidOperation
 
@@ -351,8 +352,13 @@ def submit_application(request):
         if not kyc or kyc.status != KYC.VerificationStatus.APPROVED:
             return Response({'error': 'KYC must be approved before applying'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Prevent multiple active applications for the same vehicle by same driver
-        existing = DriverApplication.objects.filter(applicant_id=applicant_id, vehicle_id=vehicle_id, status=DriverApplication.ApplicationStatus.PENDING).first()
+        # Prevent re-applying for the same vehicle by same driver and return current status
+        existing = (
+            DriverApplication.objects
+            .filter(applicant_id=applicant_id, vehicle_id=vehicle_id)
+            .order_by('-application_date')
+            .first()
+        )
         if existing:
             # Backfill risk score using logistic model if missing on older records
             if existing.risk_score is None:
@@ -360,7 +366,14 @@ def submit_application(request):
                 details = compute_driver_credit_score_logistic(applicant_id=applicant_id, vehicle=vehicle)
                 existing.risk_score = int(details.get('score') or 0)
                 existing.save(update_fields=['risk_score'])
-            return Response({'message': 'Application already pending', 'application': DriverApplicationSerializer(existing).data}, status=status.HTTP_200_OK)
+            return Response(
+                {
+                    'message': 'You have applied for this vehicle already',
+                    'status': existing.status,
+                    'application': DriverApplicationSerializer(existing).data,
+                },
+                status=status.HTTP_200_OK,
+            )
 
         # Compute risk score and create application using logistic scoring only
         from .risk_model import compute_driver_credit_score_logistic
@@ -383,6 +396,18 @@ def submit_application(request):
             status=DriverApplication.ApplicationStatus.PENDING,
             risk_score=risk_score,
         )
+        # Create owner notification
+        try:
+            Notification.objects.create(
+                user=vehicle.owner,
+                title="New Driver Application",
+                message=f"{applicant.get_full_name() or applicant.username} applied for {vehicle.registration_number}",
+                type=Notification.NotificationType.APPLICATION_SUBMITTED,
+                application=application,
+            )
+        except Exception:
+            # Non-fatal
+            pass
         resp = {'message': 'Application submitted', 'application': DriverApplicationSerializer(application).data}
         if risk_details:
             resp['risk_details'] = risk_details
@@ -401,5 +426,76 @@ def application_detail(request, pk):
         except DriverApplication.DoesNotExist:
             return Response({'error': 'Application not found'}, status=status.HTTP_404_NOT_FOUND)
         return Response(DriverApplicationSerializer(application).data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def update_application_status(request, pk):
+    """Approve or reject an application by id."""
+    try:
+        try:
+            application = DriverApplication.objects.get(id=pk)
+        except DriverApplication.DoesNotExist:
+            return Response({'error': 'Application not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        new_status = (request.data or {}).get('status')
+        valid_statuses = [
+            DriverApplication.ApplicationStatus.APPROVED,
+            DriverApplication.ApplicationStatus.REJECTED,
+        ]
+        if new_status not in valid_statuses:
+            return Response({'error': 'Invalid status. Use APPROVED or REJECTED.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if application.status == new_status:
+            return Response({'message': 'No change', 'application': DriverApplicationSerializer(application).data}, status=status.HTTP_200_OK)
+
+        application.status = new_status
+        from django.utils import timezone
+        application.decision_date = timezone.now()
+        application.save(update_fields=['status', 'decision_date'])
+
+        # Notify owner about the decision update
+        try:
+            Notification.objects.create(
+                user=application.vehicle.owner,
+                title="Application Status Updated",
+                message=f"Status set to {new_status} for {application.vehicle.registration_number}",
+                type=Notification.NotificationType.GENERIC,
+                application=application,
+            )
+        except Exception:
+            pass
+
+        return Response({'application': DriverApplicationSerializer(application).data}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def owner_applications(request):
+    """List all driver applications for vehicles owned by a given owner."""
+    try:
+        owner_id = request.query_params.get('owner')
+        if not owner_id:
+            return Response({'error': 'Missing owner id'}, status=status.HTTP_400_BAD_REQUEST)
+        apps = DriverApplication.objects.filter(vehicle__owner_id=owner_id).order_by('-application_date')
+        data = DriverApplicationSerializer(apps, many=True).data
+        return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def notifications_list(request):
+    """List notifications for a given user id."""
+    try:
+        user_id = request.query_params.get('user')
+        if not user_id:
+            return Response({'error': 'Missing user id'}, status=status.HTTP_400_BAD_REQUEST)
+        notes = Notification.objects.filter(user_id=user_id).order_by('-created_at')
+        data = NotificationSerializer(notes, many=True).data
+        return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

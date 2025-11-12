@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.html import format_html
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import User, Vehicle, DriverApplication, Payment, KYC
+from .models import User, Vehicle, DriverApplication, Payment, KYC, Notification
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -221,3 +221,12 @@ class KYCAdmin(admin.ModelAdmin):
 admin.site.site_header = "OGA Driver Platform Admin"
 admin.site.site_title = "OGA Admin"
 admin.site.index_title = "Welcome to OGA Driver Platform Administration"
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'type', 'is_read', 'created_at')
+    list_filter = ('type', 'is_read', 'created_at')
+    search_fields = ('title', 'message', 'user__username', 'user__email')
+    ordering = ('-created_at',)
+    raw_id_fields = ('user', 'application')

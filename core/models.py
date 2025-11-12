@@ -150,3 +150,24 @@ class KYC(models.Model):
     class Meta:
         verbose_name = "KYC Verification"
         verbose_name_plural = "KYC Verifications"
+
+
+class Notification(models.Model):
+    class NotificationType(models.TextChoices):
+        APPLICATION_SUBMITTED = "APPLICATION_SUBMITTED", "Application Submitted"
+        GENERIC = "GENERIC", "Generic"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=150)
+    message = models.TextField()
+    type = models.CharField(max_length=50, choices=NotificationType.choices, default=NotificationType.GENERIC)
+    application = models.ForeignKey(DriverApplication, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} -> {self.user.username}"
+
+    class Meta:
+        ordering = ('-created_at',)

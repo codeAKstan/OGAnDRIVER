@@ -561,10 +561,12 @@ export default function DashboardPage() {
                 </DialogContent>
               </Dialog>
               
+              <Link href="/dashboard/review-drivers">
               <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
                 <Search className="w-4 h-4 mr-2" />
                 Review Drivers
               </Button>
+              </Link>
               <Link href="/dashboard/fleet" className="block">
                 <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
                   <Car className="w-4 h-4 mr-2" />
