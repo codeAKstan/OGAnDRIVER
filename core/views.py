@@ -16,6 +16,8 @@ from .serializers import (
     NotificationSerializer,
 )
 from .models import Vehicle, KYC, Payment, DriverApplication, Notification
+from django.core.mail import send_mail
+from django.conf import settings
 from django.db import IntegrityError, DataError
 from decimal import InvalidOperation
 
@@ -37,7 +39,7 @@ class SignUpView(generics.CreateAPIView):
                 'message': 'User created successfully',
                 'user': user_data
             }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Validation failed', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class AdminUserCreationView(generics.CreateAPIView):
     """Admin-only endpoint for creating admin users"""
@@ -396,7 +398,6 @@ def submit_application(request):
             status=DriverApplication.ApplicationStatus.PENDING,
             risk_score=risk_score,
         )
-        # Create owner notification
         try:
             Notification.objects.create(
                 user=vehicle.owner,
@@ -406,7 +407,16 @@ def submit_application(request):
                 application=application,
             )
         except Exception:
-            # Non-fatal
+            pass
+        try:
+            Notification.objects.create(
+                user=applicant,
+                title="Application Submitted",
+                message=f"Your application for {vehicle.registration_number} has been received.",
+                type=Notification.NotificationType.APPLICATION_SUBMITTED,
+                application=application,
+            )
+        except Exception:
             pass
         resp = {'message': 'Application submitted', 'application': DriverApplicationSerializer(application).data}
         if risk_details:
@@ -433,7 +443,7 @@ def application_detail(request, pk):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def update_application_status(request, pk):
-    """Approve or reject an application by id."""
+    """Approve, reject or revert an application by id."""
     try:
         try:
             application = DriverApplication.objects.get(id=pk)
@@ -444,29 +454,109 @@ def update_application_status(request, pk):
         valid_statuses = [
             DriverApplication.ApplicationStatus.APPROVED,
             DriverApplication.ApplicationStatus.REJECTED,
+            DriverApplication.ApplicationStatus.PENDING,
         ]
         if new_status not in valid_statuses:
-            return Response({'error': 'Invalid status. Use APPROVED or REJECTED.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid status. Use APPROVED, REJECTED or PENDING.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if application.status == new_status:
             return Response({'message': 'No change', 'application': DriverApplicationSerializer(application).data}, status=status.HTTP_200_OK)
 
-        application.status = new_status
         from django.utils import timezone
-        application.decision_date = timezone.now()
-        application.save(update_fields=['status', 'decision_date'])
-
-        # Notify owner about the decision update
-        try:
-            Notification.objects.create(
-                user=application.vehicle.owner,
-                title="Application Status Updated",
-                message=f"Status set to {new_status} for {application.vehicle.registration_number}",
-                type=Notification.NotificationType.GENERIC,
-                application=application,
-            )
-        except Exception:
-            pass
+        if new_status == DriverApplication.ApplicationStatus.APPROVED:
+            vehicle = application.vehicle
+            if vehicle.driver and vehicle.driver_id != application.applicant_id:
+                return Response({'error': 'Vehicle already assigned to a driver.'}, status=status.HTTP_400_BAD_REQUEST)
+            application.status = new_status
+            application.decision_date = timezone.now()
+            application.save(update_fields=['status', 'decision_date'])
+            vehicle.driver = application.applicant
+            vehicle.save(update_fields=['driver'])
+            try:
+                Notification.objects.create(
+                    user=application.vehicle.owner,
+                    title="Application Approved",
+                    message=f"Approved for {application.vehicle.registration_number}",
+                    type=Notification.NotificationType.GENERIC,
+                    application=application,
+                )
+            except Exception:
+                pass
+            try:
+                Notification.objects.create(
+                    user=application.applicant,
+                    title="Application Approved",
+                    message="You have been approved for this loan. You have to make a 5% first payment to be assigned the vehicle.",
+                    type=Notification.NotificationType.GENERIC,
+                    application=application,
+                )
+            except Exception:
+                pass
+            try:
+                subject = "Application Approved – Oga Driver"
+                message = "You have been approved for this loan. You have to make a 5% first payment to be assigned the vehicle."
+                recipient = [application.applicant.email] if application.applicant.email else []
+                if recipient:
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient, fail_silently=True)
+            except Exception:
+                pass
+        elif new_status == DriverApplication.ApplicationStatus.REJECTED:
+            application.status = new_status
+            application.decision_date = timezone.now()
+            application.save(update_fields=['status', 'decision_date'])
+            try:
+                Notification.objects.create(
+                    user=application.vehicle.owner,
+                    title="Application Rejected",
+                    message=f"Rejected for {application.vehicle.registration_number}",
+                    type=Notification.NotificationType.GENERIC,
+                    application=application,
+                )
+            except Exception:
+                pass
+            try:
+                Notification.objects.create(
+                    user=application.applicant,
+                    title="Application Rejected",
+                    message=f"Your application for {application.vehicle.registration_number} was rejected.",
+                    type=Notification.NotificationType.GENERIC,
+                    application=application,
+                )
+            except Exception:
+                pass
+        else:
+            if application.status == DriverApplication.ApplicationStatus.APPROVED:
+                application.status = DriverApplication.ApplicationStatus.PENDING
+                application.decision_date = timezone.now()
+                application.save(update_fields=['status', 'decision_date'])
+                vehicle = application.vehicle
+                if vehicle.driver_id == application.applicant_id:
+                    vehicle.driver = None
+                    vehicle.save(update_fields=['driver'])
+                try:
+                    Notification.objects.create(
+                        user=application.vehicle.owner,
+                        title="Approval Reverted",
+                        message=f"Reverted approval for {application.vehicle.registration_number}",
+                        type=Notification.NotificationType.GENERIC,
+                        application=application,
+                    )
+                except Exception:
+                    pass
+                try:
+                    Notification.objects.create(
+                        user=application.applicant,
+                        title="Approval Reverted",
+                        message=f"Your approval for {application.vehicle.registration_number} has been reverted.",
+                        type=Notification.NotificationType.GENERIC,
+                        application=application,
+                    )
+                except Exception:
+                    pass
+            else:
+                application.status = DriverApplication.ApplicationStatus.PENDING
+                application.decision_date = timezone.now()
+                application.save(update_fields=['status', 'decision_date'])
 
         return Response({'application': DriverApplicationSerializer(application).data}, status=status.HTTP_200_OK)
     except Exception as e:
@@ -495,8 +585,20 @@ def notifications_list(request):
         if not user_id:
             return Response({'error': 'Missing user id'}, status=status.HTTP_400_BAD_REQUEST)
         notes = Notification.objects.filter(user_id=user_id).order_by('-created_at')
-        data = NotificationSerializer(notes, many=True).data
-        return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
+        items = []
+        for n in notes:
+            item = {
+                'id': str(n.id),
+                'title': n.title,
+                'message': n.message,
+                'type': n.type,
+                'is_read': n.is_read,
+                'created_at': n.created_at.isoformat() if n.created_at else None,
+            }
+            if n.application_id:
+                item['application'] = {'id': str(n.application_id)}
+            items.append(item)
+        return Response({'items': items, 'count': len(items)}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

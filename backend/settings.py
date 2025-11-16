@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -180,3 +181,25 @@ RISK_LOGISTIC_CONFIG = {
         'weekly_returns_10k': -0.4,
     }
 }
+
+# Email configuration
+try:
+    ENV_FILE = BASE_DIR / '.env.local'
+    if ENV_FILE.exists():
+        for _line in ENV_FILE.read_text(encoding='utf-8').splitlines():
+            s = _line.strip()
+            if not s or s.startswith('#'):
+                continue
+            if '=' in s:
+                k, v = s.split('=', 1)
+                os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+except Exception:
+    pass
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = (os.environ.get('EMAIL_HOST_USER') or os.environ.get('EMAIL_USER', '')).strip().strip('"').strip("'")
+EMAIL_HOST_PASSWORD = ((os.environ.get('EMAIL_HOST_PASSWORD') or os.environ.get('EMAIL_PASS', '')).replace(' ', '')).strip().strip('"').strip("'")
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-reply@ogadriver.local')

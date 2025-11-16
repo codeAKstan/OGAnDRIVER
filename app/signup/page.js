@@ -95,15 +95,32 @@ export default function SignupPage() {
     } catch (error) {
       console.error('Registration error:', error)
       let errorMessage = "Registration failed. Please try again."
-      
-      if (error.message.includes('email')) {
-        errorMessage = "An account with this email already exists."
-      } else if (error.message.includes('username')) {
-        errorMessage = "Username is already taken. Please try a different email."
-      } else if (error.message.includes('password')) {
-        errorMessage = "Password does not meet requirements."
+      if (error && typeof error.message === 'string') {
+        if (error.message.includes('email')) {
+          errorMessage = "An account with this email already exists."
+        } else if (error.message.includes('username')) {
+          errorMessage = "Username is already taken. Please try a different email."
+        } else if (error.message.includes('password')) {
+          errorMessage = "Password does not meet requirements."
+        } else {
+          errorMessage = error.message
+        }
       }
-      
+      if (error && error.data && typeof error.data === 'object') {
+        const entries = Object.entries(error.data)
+        const first = entries.length > 0 ? entries[0][1] : null
+        const firstMsg = Array.isArray(first) ? first.find(m => typeof m === 'string') : null
+        if (firstMsg) errorMessage = firstMsg
+        if (error.data.non_field_errors && Array.isArray(error.data.non_field_errors)) {
+          const nfe = error.data.non_field_errors.find(m => typeof m === 'string')
+          if (nfe) errorMessage = nfe
+        }
+        if (error.data.details && typeof error.data.details === 'object') {
+          const vals = Object.values(error.data.details).flat()
+          const msg = vals.find(m => typeof m === 'string')
+          if (msg) errorMessage = msg
+        }
+      }
       setMessage({ type: "error", text: errorMessage })
     } finally {
       setIsLoading(false)

@@ -87,6 +87,8 @@ export default function DriverApplicationDetailPage() {
   const appliedAt = application?.application_date ? new Date(application.application_date).toLocaleString() : '-'
   const decisionAt = application?.decision_date ? new Date(application.decision_date).toLocaleString() : '-'
   const category = riskCategory(application?.risk_score)
+  const assignedDriverId = application?.vehicle_details?.driver || null
+  const isLockedOther = assignedDriverId && assignedDriverId !== application?.applicant
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -107,7 +109,7 @@ export default function DriverApplicationDetailPage() {
               <Button
                 size="sm"
                 className="bg-green-600 hover:bg-green-700 text-white"
-                disabled={updating || application?.status !== 'PENDING'}
+                disabled={updating || application?.status !== 'PENDING' || Boolean(isLockedOther)}
                 onClick={() => updateStatus('APPROVED')}
               >
                 <span className="flex items-center gap-1"><Check className="w-4 h-4" /> Approve</span>
@@ -115,11 +117,21 @@ export default function DriverApplicationDetailPage() {
               <Button
                 size="sm"
                 className="bg-red-600 hover:bg-red-700 text-white"
-                disabled={updating || application?.status !== 'PENDING'}
+                disabled={updating || application?.status !== 'PENDING' || Boolean(isLockedOther)}
                 onClick={() => updateStatus('REJECTED')}
               >
                 <span className="flex items-center gap-1"><X className="w-4 h-4" /> Reject</span>
               </Button>
+              {application?.status === 'APPROVED' && (
+                <Button
+                  size="sm"
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  disabled={updating}
+                  onClick={() => updateStatus('PENDING')}
+                >
+                  Revert
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent>

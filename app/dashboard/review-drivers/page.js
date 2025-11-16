@@ -95,7 +95,7 @@ export default function ReviewDriversPage() {
     fetchNotifications()
   }, [user])
 
-  const toggleNotifications = () => setIsNotifOpen(prev => !prev)
+  const toggleNotifications = () => router.push('/notifications')
   const markAllRead = async () => {
     if (!user?.id) return
     try {
@@ -207,6 +207,9 @@ export default function ReviewDriversPage() {
                       const appliedAt = app.application_date ? new Date(app.application_date).toLocaleString() : '-'
                       const category = riskCategory(app.risk_score)
                       const isPending = app.status === 'PENDING'
+                      const assignedDriverId = app?.vehicle_details?.driver || null
+                      const isLocked = Boolean(assignedDriverId)
+                      const isApprovedApp = app.status === 'APPROVED'
                       return (
                         <tr key={app.id} className="border-t border-gray-800">
                           <td className="py-2 px-3 text-white">{driver.first_name} {driver.last_name}</td>
@@ -248,7 +251,7 @@ export default function ReviewDriversPage() {
                               <Button
                                 size="sm"
                                 className="bg-green-600 hover:bg-green-700 text-white"
-                                disabled={!isPending || updatingId === app.id}
+                                disabled={!isPending || updatingId === app.id || (isLocked && !isApprovedApp)}
                                 onClick={() => updateStatus(app.id, 'APPROVED')}
                               >
                                 {updatingId === app.id ? 'Updating...' : (
@@ -258,13 +261,23 @@ export default function ReviewDriversPage() {
                               <Button
                                 size="sm"
                                 className="bg-red-600 hover:bg-red-700 text-white"
-                                disabled={!isPending || updatingId === app.id}
+                                disabled={!isPending || updatingId === app.id || (isLocked && !isApprovedApp)}
                                 onClick={() => updateStatus(app.id, 'REJECTED')}
                               >
                                 {updatingId === app.id ? 'Updating...' : (
                                   <span className="flex items-center gap-1"><X className="w-4 h-4" /> Reject</span>
                                 )}
                               </Button>
+                              {isApprovedApp && (
+                                <Button
+                                  size="sm"
+                                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                                  disabled={updatingId === app.id}
+                                  onClick={() => updateStatus(app.id, 'PENDING')}
+                                >
+                                  Revert
+                                </Button>
+                              )}
                             </div>
                           </td>
                         </tr>

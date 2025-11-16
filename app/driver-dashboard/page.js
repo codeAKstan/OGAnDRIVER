@@ -28,6 +28,8 @@ export default function DriverDashboardPage() {
   const [kycStatus, setKycStatus] = useState(null)
   const [recentActivity, setRecentActivity] = useState([])
   const [activityLoading, setActivityLoading] = useState(true)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
     // Check if user is logged in and has the right role
@@ -60,6 +62,23 @@ export default function DriverDashboardPage() {
       }
     }
     fetchActivity()
+  }, [user])
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user?.id) return
+      try {
+        const res = await apiService.getNotifications(user.id)
+        const items = Array.isArray(res?.items) ? res.items : []
+        setNotifications(items)
+        setUnreadCount(items.filter(n => !n.is_read).length)
+      } catch (e) {
+        console.error('Failed to fetch notifications:', e)
+        setNotifications([])
+        setUnreadCount(0)
+      }
+    }
+    fetchNotifications()
   }, [user])
 
   // Sync KYC status from backend and notify on changes
@@ -138,9 +157,16 @@ export default function DriverDashboardPage() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                <Bell className="w-4 h-4" />
-              </Button>
+              <div className="relative">
+                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white" onClick={() => router.push('/notifications')} aria-label="Notifications">
+                  <Bell className="w-4 h-4" />
+                </Button>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 py-0.5">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
                 <Settings className="w-4 h-4" />
               </Button>

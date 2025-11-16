@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Bell } from "lucide-react";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -49,6 +49,9 @@ export default function Header() {
             >
               <span>Get Started Today</span>
               <Plus className="w-4 h-4" />
+            </Link>
+            <Link href="/notifications" className="text-gray-300 hover:text-white transition-colors" aria-label="Notifications">
+              <Bell className="w-5 h-5" />
             </Link>
           </nav>
 
@@ -107,6 +110,14 @@ export default function Header() {
               >
                 <span>Get Started Today</span>
                 <Plus className="w-4 h-4" />
+              </Link>
+              <Link 
+                href="/notifications" 
+                className="text-gray-300 hover:text-white transition-colors" 
+                onClick={() => setIsMenuOpen(false)}
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
               </Link>
             </div>
           </nav>
