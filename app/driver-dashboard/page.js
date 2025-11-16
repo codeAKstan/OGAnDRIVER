@@ -29,6 +29,8 @@ export default function DriverDashboardPage() {
   const [recentActivity, setRecentActivity] = useState([])
   const [activityLoading, setActivityLoading] = useState(true)
   const [overview, setOverview] = useState(null)
+  const [driverPayments, setDriverPayments] = useState([])
+  const [nextDue, setNextDue] = useState(null)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -77,6 +79,29 @@ export default function DriverDashboardPage() {
       }
     }
     fetchOverview()
+  }, [user])
+
+  useEffect(() => {
+    const fetchDriverPayments = async () => {
+      if (!user?.id) return
+      try {
+        const res = await apiService.getDriverPayments(user.id)
+        const items = Array.isArray(res?.items) ? res.items : []
+        setDriverPayments(items)
+        const last = items.find(i => i.status === 'SUCCESSFUL')
+        if (last && last.payment_date) {
+          const d = new Date(last.payment_date)
+          d.setDate(d.getDate() + 7)
+          setNextDue(d)
+        } else {
+          setNextDue(null)
+        }
+      } catch (e) {
+        setDriverPayments([])
+        setNextDue(null)
+      }
+    }
+    fetchDriverPayments()
   }, [user])
 
   useEffect(() => {
@@ -336,12 +361,12 @@ export default function DriverDashboardPage() {
           
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Rating</CardTitle>
-              <TrendingUp className="h-4 w-4 text-purple-500" />
+              <CardTitle className="text-sm font-medium text-gray-400">Next Payment</CardTitle>
+              <Clock className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">-</div>
-              <p className="text-xs text-gray-500">No ratings yet</p>
+              <div className="text-2xl font-bold text-white">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(overview?.stats?.weekly_returns || 0))}</div>
+              <p className="text-xs text-gray-500">Next: {nextDue ? new Date(nextDue).toLocaleDateString() : '-'}</p>
             </CardContent>
           </Card>
         </div>
