@@ -25,4 +25,5 @@ urlpatterns = [
     path('driver/overview/', views.driver_overview, name='driver_overview'),
     path('applications/driver/', views.driver_applications, name='driver_applications'),
     path('payments/owner/', views.owner_payments, name='owner_payments'),
+    path('payments/driver/', views.driver_payments, name='driver_payments'),
 ]

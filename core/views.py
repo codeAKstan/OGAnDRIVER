@@ -900,3 +900,17 @@ def owner_payments(request):
         return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def driver_payments(request):
+    try:
+        driver_id = request.query_params.get('driver')
+        if not driver_id:
+            return Response({'error': 'Missing driver id'}, status=status.HTTP_400_BAD_REQUEST)
+        qs = Payment.objects.filter(driver_id=driver_id).order_by('-payment_date')
+        data = PaymentSerializer(qs, many=True).data
+        return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

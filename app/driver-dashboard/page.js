@@ -351,35 +351,36 @@ export default function DriverDashboardPage() {
           {/* Next Steps */}
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
-              <CardTitle className="text-white">Next Steps</CardTitle>
+              <CardTitle className="text-white">Quick Actions</CardTitle>
               <CardDescription className="text-gray-400">
-                Complete these steps to start earning
+                Shortcuts to continue your process
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-3 p-3 bg-orange-900/20 rounded-lg border border-orange-500/30">
-                <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                <div>
-                  <p className="text-white font-medium">Wait for KYC Approval</p>
-                  <p className="text-sm text-gray-400">Your documents are being reviewed</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
-                <div className="w-5 h-5 rounded-full bg-gray-600 flex-shrink-0"></div>
-                <div>
-                  <p className="text-gray-400 font-medium">Get Vehicle Assignment</p>
-                  <p className="text-sm text-gray-500">Available after KYC approval</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3 p-3 bg-gray-800 rounded-lg">
-                <div className="w-5 h-5 rounded-full bg-gray-600 flex-shrink-0"></div>
-                <div>
-                  <p className="text-gray-400 font-medium">Start Earning</p>
-                  <p className="text-sm text-gray-500">Begin your driving journey</p>
-                </div>
-              </div>
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {overview?.application?.status === 'APPROVED' && !overview?.stats?.deposit_paid ? (
+                <Link href={`/driver-dashboard/loan/${overview?.application?.id}`} className="block">
+                  <Button className="w-full bg-orange-500 hover:bg-orange-600 text-black">
+                    Make 5% Payment
+                  </Button>
+                </Link>
+              ) : null}
+              <Link href="/driver-dashboard/available-vehicles" className="block">
+                <Button className="w-full bg-gray-800 border border-gray-700 text-white hover:bg-gray-700">
+                  See Available Vehicles
+                </Button>
+              </Link>
+              <Link href="/driver-dashboard/payments" className="block">
+                <Button className="w-full bg-gray-800 border border-gray-700 text-white hover:bg-gray-700">
+                  View Payment History
+                </Button>
+              </Link>
+              {overview?.application?.id ? (
+                <Link href={`/driver-dashboard/loan/${overview?.application?.id}`} className="block">
+                  <Button className="w-full bg-gray-800 border border-gray-700 text-white hover:bg-gray-700">
+                    View Loan Details
+                  </Button>
+                </Link>
+              ) : null}
             </CardContent>
           </Card>
 
