@@ -1,11 +1,11 @@
 "use client"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import apiService from "@/lib/api"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
-export default function DepositCallbackPage() {
+function CallbackContent() {
   const router = useRouter()
   const params = useSearchParams()
   const [status, setStatus] = useState('pending')
@@ -53,5 +53,13 @@ export default function DepositCallbackPage() {
         </Card>
       </main>
     </div>
+  )
+}
+
+export default function DepositCallbackPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center"><p className="text-gray-400">Loading...</p></div>}>
+      <CallbackContent />
+    </Suspense>
   )
 }
