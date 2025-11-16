@@ -442,6 +442,71 @@ def application_detail(request, pk):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+def application_deposit_payment(request, pk):
+    try:
+        try:
+            application = DriverApplication.objects.get(id=pk)
+        except DriverApplication.DoesNotExist:
+            return Response({'error': 'Application not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if application.status != DriverApplication.ApplicationStatus.APPROVED:
+            return Response({'error': 'Application must be approved before deposit'}, status=status.HTTP_400_BAD_REQUEST)
+
+        from decimal import Decimal
+        total_cost = Decimal(str(application.vehicle.total_cost or '0'))
+        deposit = (total_cost * Decimal('0.05')).quantize(Decimal('0.01'))
+
+        import uuid as _uuid
+        tx_id = f"DEP-{_uuid.uuid4()}"
+
+        Payment.objects.create(
+            transaction_id=tx_id,
+            vehicle=application.vehicle,
+            driver=application.applicant,
+            amount=deposit,
+            status=Payment.PaymentStatus.SUCCESSFUL,
+        )
+
+        from decimal import Decimal as D
+        application.vehicle.amount_paid = (D(str(application.vehicle.amount_paid or '0')) + deposit).quantize(D('0.01'))
+        application.vehicle.save(update_fields=['amount_paid'])
+
+        try:
+            Notification.objects.create(
+                user=application.applicant,
+                title="Deposit Paid",
+                message="Your 5% deposit has been received. Your loan is now active.",
+                type=Notification.NotificationType.GENERIC,
+                application=application,
+            )
+        except Exception:
+            pass
+        try:
+            Notification.objects.create(
+                user=application.vehicle.owner,
+                title="Driver Deposit Received",
+                message=f"5% deposit received for {application.vehicle.registration_number}.",
+                type=Notification.NotificationType.GENERIC,
+                application=application,
+            )
+        except Exception:
+            pass
+        try:
+            subject = "Deposit Received – Oga Driver"
+            message = "Your 5% deposit has been received. Your loan is now active."
+            recipient = [application.applicant.email] if application.applicant.email else []
+            if recipient:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient, fail_silently=True)
+        except Exception:
+            pass
+
+        return Response({'application': DriverApplicationSerializer(application).data}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def update_application_status(request, pk):
     """Approve, reject or revert an application by id."""
     try:

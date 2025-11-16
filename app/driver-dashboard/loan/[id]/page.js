@@ -57,6 +57,22 @@ export default function LoanDetailsPage({ params }) {
 
   const v = application?.vehicle_details || {}
   const status = (application?.status || 'PENDING').toUpperCase()
+  const depositPaid = Boolean(application?.deposit_paid)
+  const depositAmount = (() => {
+    const tc = Number(v?.total_cost || 0)
+    return Math.round(tc * 0.05)
+  })()
+
+  const payDeposit = async () => {
+    if (!application?.id) return
+    try {
+      await apiService.payApplicationDeposit(application.id)
+      const res = await apiService.getApplication(application.id)
+      setApplication(res)
+    } catch (e) {
+      console.error('Deposit failed:', e)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -93,6 +109,29 @@ export default function LoanDetailsPage({ params }) {
               <CardDescription className="text-gray-300">
                 Congratulations! Your application has been approved.
               </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
+        {status === 'APPROVED' && !depositPaid && (
+          <Card className="bg-yellow-900/30 border-yellow-700">
+            <CardHeader>
+              <CardTitle className="text-white">Pay 5% First Payment</CardTitle>
+              <CardDescription className="text-gray-300">Your loan becomes active after this payment.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-300">Amount</span>
+                <span className="text-sm text-white">₦{depositAmount.toLocaleString()}</span>
+              </div>
+              <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-black" onClick={payDeposit}>Make 5% Payment</Button>
+            </CardContent>
+          </Card>
+        )}
+        {status === 'APPROVED' && depositPaid && (
+          <Card className="bg-blue-900/30 border-blue-700">
+            <CardHeader>
+              <CardTitle className="text-white">Loan Active</CardTitle>
+              <CardDescription className="text-gray-300">Your 5% deposit has been paid. You are ready to proceed.</CardDescription>
             </CardHeader>
           </Card>
         )}

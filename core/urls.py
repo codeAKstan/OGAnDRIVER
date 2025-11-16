@@ -16,6 +16,7 @@ urlpatterns = [
     path('applications/submit/', views.submit_application, name='submit_application'),
     path('applications/<uuid:pk>/', views.application_detail, name='application_detail'),
     path('applications/<uuid:pk>/status/', views.update_application_status, name='update_application_status'),
+    path('applications/<uuid:pk>/deposit/', views.application_deposit_payment, name='application_deposit_payment'),
     path('applications/owner/', views.owner_applications, name='owner_applications'),
     path('notifications/', views.notifications_list, name='notifications_list'),
     path('notifications/mark-read/', views.notifications_mark_read, name='notifications_mark_read'),

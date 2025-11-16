@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from .models import Vehicle, KYC, DriverApplication, Notification
+from .models import Vehicle, KYC, DriverApplication, Notification, Payment
 from decimal import Decimal
 
 User = get_user_model()
@@ -208,13 +208,29 @@ class DriverApplicationSerializer(serializers.ModelSerializer):
     vehicle_details = VehicleSerializer(source='vehicle', read_only=True)
     applicant_details = UserSerializer(source='applicant', read_only=True)
 
+    deposit_paid = serializers.SerializerMethodField()
+
     class Meta:
         model = DriverApplication
         fields = (
             'id', 'applicant', 'applicant_details', 'vehicle', 'vehicle_details',
-            'status', 'risk_score', 'application_date', 'decision_date'
+            'status', 'risk_score', 'application_date', 'decision_date', 'deposit_paid'
         )
-        read_only_fields = ('id', 'status', 'risk_score', 'application_date', 'decision_date')
+        read_only_fields = ('id', 'status', 'risk_score', 'application_date', 'decision_date', 'deposit_paid')
+
+    def get_deposit_paid(self, obj):
+        try:
+            total_cost = Decimal(str(obj.vehicle.total_cost or '0'))
+            threshold = (total_cost * Decimal('0.05')).quantize(Decimal('0.01'))
+            amounts = Payment.objects.filter(
+                driver_id=obj.applicant_id,
+                vehicle_id=obj.vehicle_id,
+                status=Payment.PaymentStatus.SUCCESSFUL,
+            ).values_list('amount', flat=True)
+            paid = sum(Decimal(str(a)) for a in amounts) if amounts else Decimal('0')
+            return paid >= threshold
+        except Exception:
+            return False
 
 
 class NotificationSerializer(serializers.ModelSerializer):
