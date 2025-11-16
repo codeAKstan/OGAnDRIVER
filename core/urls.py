@@ -17,7 +17,12 @@ urlpatterns = [
     path('applications/<uuid:pk>/', views.application_detail, name='application_detail'),
     path('applications/<uuid:pk>/status/', views.update_application_status, name='update_application_status'),
     path('applications/<uuid:pk>/deposit/', views.application_deposit_payment, name='application_deposit_payment'),
+    path('payments/deposit/init/', views.deposit_init, name='deposit_init'),
+    path('payments/deposit/verify/', views.deposit_verify, name='deposit_verify'),
     path('applications/owner/', views.owner_applications, name='owner_applications'),
     path('notifications/', views.notifications_list, name='notifications_list'),
     path('notifications/mark-read/', views.notifications_mark_read, name='notifications_mark_read'),
+    path('driver/overview/', views.driver_overview, name='driver_overview'),
+    path('applications/driver/', views.driver_applications, name='driver_applications'),
+    path('payments/owner/', views.owner_payments, name='owner_payments'),
 ]

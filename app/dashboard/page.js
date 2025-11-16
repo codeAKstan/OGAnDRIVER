@@ -35,6 +35,7 @@ export default function DashboardPage() {
   const [amountReceived, setAmountReceived] = useState(0)
   const [totalReceivable, setTotalReceivable] = useState(0)
   const [weeklyReturns, setWeeklyReturns] = useState(0)
+  const [vehicles, setVehicles] = useState([])
   const [isAddVehicleOpen, setIsAddVehicleOpen] = useState(false)
   const [vehicleForm, setVehicleForm] = useState({
     vehicle_type: '',
@@ -121,8 +122,9 @@ export default function DashboardPage() {
     const fetchVehicles = async () => {
       try {
         if (!user?.id) return
-        const vehicles = await apiService.getVehicles(user.id)
-        const list = Array.isArray(vehicles) ? vehicles : (vehicles?.results || [])
+        const res = await apiService.getVehicles(user.id)
+        const list = Array.isArray(res) ? res : (res?.results || [])
+        setVehicles(list)
         setVehicleCount(list.length)
         const total = list.reduce((acc, v) => acc + parseFloat(v?.total_cost ?? 0), 0)
         setTotalInvestment(total)
@@ -430,8 +432,21 @@ export default function DashboardPage() {
               <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">0</div>
-              <p className="text-xs text-gray-500">No drivers assigned</p>
+              <div className="text-2xl font-bold text-white">{(() => {
+                try {
+                  return (Array.isArray(vehicles) ? vehicles : []).filter(v => !!v.driver).length
+                } catch {
+                  return 0
+                }
+              })()}</div>
+              <p className="text-xs text-gray-500">{(() => {
+                try {
+                  const count = (Array.isArray(vehicles) ? vehicles : []).filter(v => !!v.driver).length
+                  return count === 0 ? 'No drivers assigned' : 'Drivers currently assigned'
+                } catch {
+                  return 'No drivers assigned'
+                }
+              })()}</p>
             </CardContent>
           </Card>
           
@@ -652,10 +667,12 @@ export default function DashboardPage() {
                   View Fleet
                 </Button>
               </Link>
-              <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
-                <DollarSign className="w-4 h-4 mr-2" />
-                View Financial Reports
-              </Button>
+              <Link href="/dashboard/financial" className="block w-full">
+                <Button variant="outline" className="w-full border-gray-600 text-black hover:bg-gray-800">
+                  <DollarSign className="w-4 h-4 mr-2" />
+                  View Financial Reports
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 

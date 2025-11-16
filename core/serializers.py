@@ -244,3 +244,16 @@ class NotificationSerializer(serializers.ModelSerializer):
             'is_read', 'created_at'
         )
         read_only_fields = ('id', 'created_at')
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    driver_details = UserSerializer(source='driver', read_only=True)
+    vehicle_details = VehicleSerializer(source='vehicle', read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = (
+            'id', 'transaction_id', 'vehicle', 'vehicle_details', 'driver', 'driver_details',
+            'amount', 'payment_date', 'status'
+        )
+        read_only_fields = ('id', 'payment_date')

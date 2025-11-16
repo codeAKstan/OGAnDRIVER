@@ -203,3 +203,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = (os.environ.get('EMAIL_HOST_USER') or os.environ.get('EMAIL_USER', '')).strip().strip('"').strip("'")
 EMAIL_HOST_PASSWORD = ((os.environ.get('EMAIL_HOST_PASSWORD') or os.environ.get('EMAIL_PASS', '')).replace(' ', '')).strip().strip('"').strip("'")
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'no-reply@ogadriver.local')
+
+# Paystack configuration
+PAYSTACK_SECRET_KEY = (os.environ.get('PAYSTACK_SECRET_KEY', '')).strip().strip('"').strip("'")
+PAYSTACK_PUBLIC_KEY = (os.environ.get('PAYSTACK_PUBLIC_KEY', '')).strip().strip('"').strip("'")
+PAYSTACK_DEFAULT_CALLBACK = os.environ.get('PAYSTACK_DEFAULT_CALLBACK', 'http://localhost:3000/driver-dashboard/payment/callback')

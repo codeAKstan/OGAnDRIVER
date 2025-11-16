@@ -14,10 +14,14 @@ from .serializers import (
     KYCSerializer,
     DriverApplicationSerializer,
     NotificationSerializer,
+    PaymentSerializer,
 )
 from .models import Vehicle, KYC, Payment, DriverApplication, Notification
 from django.core.mail import send_mail
 from django.conf import settings
+import json
+from urllib import request as urlrequest
+from urllib.error import HTTPError, URLError
 from django.db import IntegrityError, DataError
 from decimal import InvalidOperation
 
@@ -505,6 +509,143 @@ def application_deposit_payment(request, pk):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def _paystack_request(path, payload=None, method='POST'):
+    url = f"https://api.paystack.co{path}"
+    data = None
+    if payload is not None:
+        data = json.dumps(payload).encode('utf-8')
+    req = urlrequest.Request(url, data=data, method=method)
+    req.add_header('Authorization', f"Bearer {getattr(settings, 'PAYSTACK_SECRET_KEY', '')}")
+    req.add_header('Content-Type', 'application/json')
+    try:
+        with urlrequest.urlopen(req, timeout=20) as resp:
+            body = resp.read().decode('utf-8')
+            try:
+                return json.loads(body)
+            except Exception:
+                return {'status': False, 'message': body}
+    except HTTPError as e:
+        try:
+            raw = e.read().decode('utf-8')
+            return json.loads(raw)
+        except Exception:
+            return {'status': False, 'message': getattr(e, 'reason', str(e))}
+    except URLError as e:
+        return {'status': False, 'message': str(e)}
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def deposit_init(request):
+    try:
+        data = request.data or {}
+        application_id = data.get('application')
+        callback_url = data.get('callback_url') or getattr(settings, 'PAYSTACK_DEFAULT_CALLBACK', '')
+        if not application_id:
+            return Response({'error': 'Missing application id'}, status=status.HTTP_400_BAD_REQUEST)
+        # Basic validations
+        secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
+        if not secret:
+            return Response({'error': 'PAYSTACK_SECRET_KEY not configured'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            application = DriverApplication.objects.get(id=application_id)
+        except DriverApplication.DoesNotExist:
+            return Response({'error': 'Application not found'}, status=status.HTTP_404_NOT_FOUND)
+        if application.status != DriverApplication.ApplicationStatus.APPROVED:
+            return Response({'error': 'Application must be approved before deposit'}, status=status.HTTP_400_BAD_REQUEST)
+        if not application.applicant.email:
+            return Response({'error': 'Applicant email is required for Paystack'}, status=status.HTTP_400_BAD_REQUEST)
+        from decimal import Decimal
+        total_cost = Decimal(str(application.vehicle.total_cost or '0'))
+        deposit = (total_cost * Decimal('0.05')).quantize(Decimal('0.01'))
+        amount_kobo = int((deposit * 100).to_integral_value())
+        ref = f"DEP-{application.id}"
+        payload = {
+            'email': application.applicant.email,
+            'amount': amount_kobo,
+            'reference': ref,
+            'callback_url': callback_url,
+            'metadata': {
+                'application': str(application.id),
+                'driver': str(application.applicant_id),
+                'vehicle': str(application.vehicle_id),
+                'type': 'deposit_5pct'
+            }
+        }
+        res = _paystack_request('/transaction/initialize', payload=payload, method='POST')
+        if res.get('status'):
+            data = res.get('data') or {}
+            return Response({'authorization_url': data.get('authorization_url'), 'reference': data.get('reference')}, status=status.HTTP_200_OK)
+        return Response({'error': res.get('message') or 'Paystack init failed'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def deposit_verify(request):
+    try:
+        data = request.data or {}
+        reference = data.get('reference') or request.query_params.get('reference')
+        if not reference:
+            return Response({'error': 'Missing reference'}, status=status.HTTP_400_BAD_REQUEST)
+        res = _paystack_request(f"/transaction/verify/{reference}", payload=None, method='GET')
+        if not res.get('status'):
+            return Response({'error': res.get('message') or 'Verification failed'}, status=status.HTTP_400_BAD_REQUEST)
+        payload = res.get('data') or {}
+        amount_kobo = payload.get('amount') or 0
+        status_str = payload.get('status')
+        metadata = payload.get('metadata') or {}
+        application_id = metadata.get('application')
+        if status_str != 'success' or not application_id:
+            return Response({'error': 'Payment not successful'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            application = DriverApplication.objects.get(id=application_id)
+        except DriverApplication.DoesNotExist:
+            return Response({'error': 'Application not found'}, status=status.HTTP_404_NOT_FOUND)
+        from decimal import Decimal
+        total_cost = Decimal(str(application.vehicle.total_cost or '0'))
+        deposit = (total_cost * Decimal('0.05')).quantize(Decimal('0.01'))
+        expected_kobo = int((deposit * 100).to_integral_value())
+        if int(amount_kobo) < expected_kobo:
+            return Response({'error': 'Insufficient amount'}, status=status.HTTP_400_BAD_REQUEST)
+        import uuid as _uuid
+        tx_id = payload.get('reference') or f"DEP-{_uuid.uuid4()}"
+        Payment.objects.create(
+            transaction_id=tx_id,
+            vehicle=application.vehicle,
+            driver=application.applicant,
+            amount=deposit,
+            status=Payment.PaymentStatus.SUCCESSFUL,
+        )
+        from decimal import Decimal as D
+        application.vehicle.amount_paid = (D(str(application.vehicle.amount_paid or '0')) + deposit).quantize(D('0.01'))
+        application.vehicle.save(update_fields=['amount_paid'])
+        try:
+            Notification.objects.create(
+                user=application.applicant,
+                title="Deposit Paid",
+                message="Your 5% deposit has been received. Your loan is now active.",
+                type=Notification.NotificationType.GENERIC,
+                application=application,
+            )
+        except Exception:
+            pass
+        try:
+            Notification.objects.create(
+                user=application.vehicle.owner,
+                title="Driver Deposit Received",
+                message=f"5% deposit received for {application.vehicle.registration_number}.",
+                type=Notification.NotificationType.GENERIC,
+                application=application,
+            )
+        except Exception:
+            pass
+        return Response({'application': DriverApplicationSerializer(application).data}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def update_application_status(request, pk):
@@ -687,5 +828,75 @@ def notifications_mark_read(request):
             return Response({'error': 'Provide user or id'}, status=status.HTTP_400_BAD_REQUEST)
         updated = Notification.objects.filter(user_id=user_id, is_read=False).update(is_read=True)
         return Response({'message': 'Marked all as read', 'updated': updated}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def driver_overview(request):
+    try:
+        driver_id = request.query_params.get('driver')
+        if not driver_id:
+            return Response({'error': 'Missing driver id'}, status=status.HTTP_400_BAD_REQUEST)
+        vehicle = Vehicle.objects.filter(driver_id=driver_id).first()
+        app_qs = DriverApplication.objects.filter(applicant_id=driver_id).order_by('-application_date')
+        application = app_qs.first()
+        from decimal import Decimal
+        deposit_paid = False
+        total_receivable = 0
+        amount_paid = 0
+        weekly_returns = 0
+        if vehicle:
+            total_receivable = float(vehicle.total_receivable or 0)
+            amount_paid = float(vehicle.amount_paid or 0)
+            weekly_returns = float(vehicle.weekly_returns or 0)
+            threshold = (Decimal(str(vehicle.total_cost or '0')) * Decimal('0.05')).quantize(Decimal('0.01'))
+            amounts = Payment.objects.filter(driver_id=driver_id, vehicle_id=vehicle.id, status=Payment.PaymentStatus.SUCCESSFUL).values_list('amount', flat=True)
+            paid = sum(Decimal(str(a)) for a in amounts) if amounts else Decimal('0')
+            deposit_paid = paid >= threshold
+        payload = {
+            'vehicle': {
+                'id': str(getattr(vehicle, 'id', '')) if vehicle else None,
+                'model_name': getattr(vehicle, 'model_name', None) if vehicle else None,
+                'registration_number': getattr(vehicle, 'registration_number', None) if vehicle else None,
+            },
+            'application': DriverApplicationSerializer(application).data if application else None,
+            'stats': {
+                'total_receivable': total_receivable,
+                'amount_paid': amount_paid,
+                'weekly_returns': weekly_returns,
+                'deposit_paid': deposit_paid,
+            }
+        }
+        return Response(payload, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def driver_applications(request):
+    try:
+        driver_id = request.query_params.get('driver')
+        if not driver_id:
+            return Response({'error': 'Missing driver id'}, status=status.HTTP_400_BAD_REQUEST)
+        apps = DriverApplication.objects.filter(applicant_id=driver_id).order_by('-application_date')
+        data = DriverApplicationSerializer(apps, many=True).data
+        return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def owner_payments(request):
+    try:
+        owner_id = request.query_params.get('owner')
+        if not owner_id:
+            return Response({'error': 'Missing owner id'}, status=status.HTTP_400_BAD_REQUEST)
+        qs = Payment.objects.filter(vehicle__owner_id=owner_id).order_by('-payment_date')
+        data = PaymentSerializer(qs, many=True).data
+        return Response({'items': data, 'count': len(data)}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

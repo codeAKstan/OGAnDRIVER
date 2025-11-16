@@ -66,11 +66,31 @@ export default function LoanDetailsPage({ params }) {
   const payDeposit = async () => {
     if (!application?.id) return
     try {
-      await apiService.payApplicationDeposit(application.id)
-      const res = await apiService.getApplication(application.id)
-      setApplication(res)
+      const cb = typeof window !== 'undefined' ? `${window.location.origin}/driver-dashboard/payment/callback` : undefined
+      const res = await apiService.initDeposit(application.id, cb)
+      const url = res?.authorization_url
+      if (url) {
+        window.location.href = url
+        return
+      }
+      // Fallback: if Paystack init failed without an authorization URL, simulate deposit for development
+      const direct = await apiService.payApplicationDeposit(application.id)
+      if (direct?.application) {
+        const refreshed = await apiService.getApplication(application.id)
+        setApplication(refreshed)
+        return
+      }
     } catch (e) {
-      console.error('Deposit failed:', e)
+      // Fallback on error
+      try {
+        const direct = await apiService.payApplicationDeposit(application.id)
+        if (direct?.application) {
+          const refreshed = await apiService.getApplication(application.id)
+          setApplication(refreshed)
+        }
+      } catch (err) {
+        console.error('Deposit failed:', e)
+      }
     }
   }
 

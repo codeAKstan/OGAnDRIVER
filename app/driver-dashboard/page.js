@@ -28,6 +28,7 @@ export default function DriverDashboardPage() {
   const [kycStatus, setKycStatus] = useState(null)
   const [recentActivity, setRecentActivity] = useState([])
   const [activityLoading, setActivityLoading] = useState(true)
+  const [overview, setOverview] = useState(null)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -62,6 +63,20 @@ export default function DriverDashboardPage() {
       }
     }
     fetchActivity()
+  }, [user])
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      if (!user?.id) return
+      try {
+        const res = await apiService.getDriverOverview(user.id)
+        setOverview(res || null)
+      } catch (e) {
+        console.error('Failed to fetch overview:', e)
+        setOverview(null)
+      }
+    }
+    fetchOverview()
   }, [user])
 
   useEffect(() => {
@@ -186,7 +201,9 @@ export default function DriverDashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* KYC Status Banner */}
-        {kycStatus === 'APPROVED' ? (
+        {kycStatus === 'APPROVED' && overview?.stats?.deposit_paid ? (
+          null
+        ) : kycStatus === 'APPROVED' && !overview?.stats?.deposit_paid ? (
           <Card className="bg-[green] border-green-500/30 mb-8">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
@@ -194,9 +211,20 @@ export default function DriverDashboardPage() {
                 KYC Approved
               </CardTitle>
               <CardDescription className="text-gray-300">
-                Your KYC has been approved. You can now apply for available vehicles.
+                You are approved. Pay 5% to activate your loan.
               </CardDescription>
             </CardHeader>
+            <CardContent>
+              {overview?.application?.status === 'APPROVED' ? (
+                <Link href={`/driver-dashboard/loan/${overview?.application?.id}`}>
+                  <Button className="bg-orange-500 hover:bg-orange-600 text-black">Make 5% Payment</Button>
+                </Link>
+              ) : (
+                <Link href="/driver-dashboard/available-vehicles">
+                  <Button className="bg-orange-500 hover:bg-orange-600 text-black">See Available Vehicles</Button>
+                </Link>
+              )}
+            </CardContent>
           </Card>
         ) : kycStatus === 'SUBMITTED' ? (
           <Card className="bg-[green] border-green-500/30 mb-8">
@@ -270,8 +298,17 @@ export default function DriverDashboardPage() {
               <Car className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">Pending</div>
-              <p className="text-xs text-gray-500">Waiting for assignment</p>
+              {overview?.vehicle?.registration_number ? (
+                <>
+                  <div className="text-2xl font-bold text-white">{overview.vehicle.registration_number}</div>
+                  <p className="text-xs text-gray-500">{overview.vehicle.model_name}</p>
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-white">Pending</div>
+                  <p className="text-xs text-gray-500">Waiting for assignment</p>
+                </>
+              )}
             </CardContent>
           </Card>
           
@@ -281,7 +318,7 @@ export default function DriverDashboardPage() {
               <DollarSign className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">₦0</div>
+              <div className="text-2xl font-bold text-white">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(overview?.stats?.total_receivable || 0))}</div>
               <p className="text-xs text-gray-500">Hire purchase total</p>
             </CardContent>
           </Card>
@@ -292,7 +329,7 @@ export default function DriverDashboardPage() {
               <Clock className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">₦0</div>
+              <div className="text-2xl font-bold text-white">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(overview?.stats?.amount_paid || 0))}</div>
               <p className="text-xs text-gray-500">Cumulative paid to date</p>
             </CardContent>
           </Card>
