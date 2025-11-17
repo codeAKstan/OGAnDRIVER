@@ -67,6 +67,8 @@ export default function DriverDashboardPage() {
     fetchActivity()
   }, [user])
 
+  const isDueToday = nextDue ? (new Date().toDateString() === new Date(nextDue).toDateString()) : false
+
   useEffect(() => {
     const fetchOverview = async () => {
       if (!user?.id) return
@@ -367,6 +369,11 @@ export default function DriverDashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold text-white">{new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(overview?.stats?.weekly_returns || 0))}</div>
               <p className="text-xs text-gray-500">Next: {nextDue ? new Date(nextDue).toLocaleDateString() : '-'}</p>
+              {isDueToday && overview?.application?.id ? (
+                <Link href={`/driver-dashboard/loan/${overview?.application?.id}`}>
+                  <Button className="mt-3 bg-orange-500 hover:bg-orange-600 text-black">Make Weekly Payment</Button>
+                </Link>
+              ) : null}
             </CardContent>
           </Card>
         </div>
