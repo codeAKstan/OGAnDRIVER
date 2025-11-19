@@ -31,6 +31,7 @@ export default function DriverDashboardPage() {
   const [overview, setOverview] = useState(null)
   const [driverPayments, setDriverPayments] = useState([])
   const [nextDue, setNextDue] = useState(null)
+  const appStatus = overview?.application?.status
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -230,7 +231,7 @@ export default function DriverDashboardPage() {
         {/* KYC Status Banner */}
         {kycStatus === 'APPROVED' && overview?.stats?.deposit_paid ? (
           null
-        ) : kycStatus === 'APPROVED' && !overview?.stats?.deposit_paid ? (
+        ) : kycStatus === 'APPROVED' ? (
           <Card className="bg-[green] border-green-500/30 mb-8">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
@@ -238,11 +239,13 @@ export default function DriverDashboardPage() {
                 KYC Approved
               </CardTitle>
               <CardDescription className="text-gray-300">
-                You are approved. Pay 5% to activate your loan.
+                {appStatus === 'APPROVED' && !overview?.stats?.deposit_paid
+                  ? 'You are approved. Pay 5% to activate your loan.'
+                  : 'Your KYC is approved. Apply for a vehicle to get assigned.'}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {overview?.application?.status === 'APPROVED' ? (
+              {appStatus === 'APPROVED' && !overview?.stats?.deposit_paid ? (
                 <Link href={`/driver-dashboard/loan/${overview?.application?.id}`}>
                   <Button className="bg-orange-500 hover:bg-orange-600 text-black">Make 5% Payment</Button>
                 </Link>

@@ -272,7 +272,7 @@ export default function ReviewDriversPage() {
                                 <Button
                                   size="sm"
                                   className="bg-orange-600 hover:bg-orange-700 text-white"
-                                  disabled={updatingId === app.id}
+                                  disabled={updatingId === app.id || Boolean(app.deposit_paid)}
                                   onClick={() => updateStatus(app.id, 'PENDING')}
                                 >
                                   Revert

@@ -732,6 +732,13 @@ def update_application_status(request, pk):
                 pass
         else:
             if application.status == DriverApplication.ApplicationStatus.APPROVED:
+                from decimal import Decimal
+                total_cost = Decimal(str(application.vehicle.total_cost or '0'))
+                threshold = (total_cost * Decimal('0.05')).quantize(Decimal('0.01'))
+                amounts = Payment.objects.filter(driver_id=application.applicant_id, vehicle_id=application.vehicle_id, status=Payment.PaymentStatus.SUCCESSFUL).values_list('amount', flat=True)
+                paid = sum(Decimal(str(a)) for a in amounts) if amounts else Decimal('0')
+                if paid >= threshold:
+                    return Response({'error': 'Cannot revert after deposit paid'}, status=status.HTTP_400_BAD_REQUEST)
                 application.status = DriverApplication.ApplicationStatus.PENDING
                 application.decision_date = timezone.now()
                 application.save(update_fields=['status', 'decision_date'])

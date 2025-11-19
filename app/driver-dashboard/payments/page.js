@@ -13,6 +13,60 @@ export default function DriverPaymentsPage() {
   const [fetching, setFetching] = useState(false)
   const [items, setItems] = useState([])
 
+  const exportPDF = () => {
+    try {
+      const win = window.open('', 'PRINT', 'height=800,width=1000')
+      const rows = (items || []).map((t) => {
+        const v = t.vehicle_details || {}
+        const paidAt = t.payment_date ? new Date(t.payment_date).toLocaleString() : '-'
+        const amt = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(Number(t.amount || 0))
+        return `<tr>
+          <td>${paidAt}</td>
+          <td>${amt}</td>
+          <td>${v.registration_number || ''}</td>
+          <td>${t.transaction_id || ''}</td>
+          <td>${t.status || ''}</td>
+        </tr>`
+      }).join('')
+      const html = `
+        <html>
+          <head>
+            <title>Payment History</title>
+            <style>
+              body { font-family: Arial, sans-serif; color: #000; }
+              h1 { font-size: 18px; }
+              table { width: 100%; border-collapse: collapse; }
+              th, td { border: 1px solid #444; padding: 8px; font-size: 12px; }
+              th { background: #eee; }
+            </style>
+          </head>
+          <body>
+            <h1>Payment History</h1>
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Vehicle</th>
+                  <th>Transaction</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows}
+              </tbody>
+            </table>
+          </body>
+        </html>`
+      win.document.write(html)
+      win.document.close()
+      win.focus()
+      win.print()
+      win.close()
+    } catch (e) {
+    }
+  }
+
   useEffect(() => {
     const userData = localStorage.getItem('user')
     const role = localStorage.getItem('userRole')
@@ -55,9 +109,12 @@ export default function DriverPaymentsPage() {
       <header className="bg-gray-900 border-b border-gray-800">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-orange-500">Payment History</h1>
-          <Link href="/driver-dashboard">
-            <Button variant="ghost" className="text-gray-300 hover:text-white">Back to Dashboard</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Button onClick={exportPDF} className="bg-gray-800 border border-gray-700 text-white hover:bg-gray-700">Export PDF</Button>
+            <Link href="/driver-dashboard">
+              <Button variant="ghost" className="text-gray-300 hover:text-white">Back to Dashboard</Button>
+            </Link>
+          </div>
         </div>
       </header>
 

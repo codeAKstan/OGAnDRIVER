@@ -126,7 +126,7 @@ export default function DriverApplicationDetailPage() {
                 <Button
                   size="sm"
                   className="bg-orange-600 hover:bg-orange-700 text-white"
-                  disabled={updating}
+                  disabled={updating || Boolean(application?.deposit_paid)}
                   onClick={() => updateStatus('PENDING')}
                 >
                   Revert
